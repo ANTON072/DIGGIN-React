@@ -10,15 +10,14 @@ import "normalize.css"
 import "@blueprintjs/core/lib/css/blueprint.css"
 import "@blueprintjs/icons/lib/css/blueprint-icons.css"
 
-const { store, runSaga, history } = configureStore({})
-console.log(Colors)
+const { store, runSaga } = configureStore({})
 const theme = { Colors }
 
 runSaga()
 ReactDOM.render(
   <Provider store={store}>
     <ThemeProvider theme={theme}>
-      <App history={history} />
+      <App />
     </ThemeProvider>
   </Provider>,
   document.getElementById("app-root")
