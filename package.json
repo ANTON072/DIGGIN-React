@@ -45,9 +45,12 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^3.7.0",
+    "@types/ramda": "^0.25.39",
+    "email-validator": "^2.0.4",
     "immer": "^1.7.2",
     "normalize.css": "^8.0.0",
     "normalizr": "^3.3.0",
+    "ramda": "^0.25.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-helmet": "^5.2.0",

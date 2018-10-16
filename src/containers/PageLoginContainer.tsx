@@ -13,7 +13,7 @@ import {
 
 interface Props {
   inputAction: (params: InputAction) => void
-  loginAction: () => void
+  validateAction: () => void
 }
 
 interface HandlerProps {
@@ -78,7 +78,7 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
       inputAction: pageLoginActions.input,
-      loginAction: pageLoginActions.login.started
+      validateAction: pageLoginActions.validate
     },
     dispatch
   )
@@ -89,11 +89,11 @@ export default compose<EnhancedProps, {}>(
     mapDispatchToProps
   ),
   withHandlers<EnhancedProps, HandlerProps>({
-    handleSubmit: ({ loginAction }) => (
+    handleSubmit: ({ validateAction }) => (
       e: React.FormEvent<HTMLFormElement>
     ) => {
       e.preventDefault()
-      loginAction()
+      validateAction()
     },
     handleChange: ({ inputAction }) => (inputType: string) => (
       e: React.FormEvent<HTMLInputElement>
