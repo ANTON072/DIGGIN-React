@@ -1,17 +1,19 @@
 import * as React from "react"
 import { connect } from "react-redux"
-import { bindActionCreators } from "redux"
+import { bindActionCreators, Dispatch } from "redux"
 import styled from "styled-components"
 import { FormGroup, Button, InputGroup } from "@blueprintjs/core"
 import { compose, withHandlers } from "recompose"
 
 import {
   actions as pageLoginActions,
-  PageLoginState
+  PageLoginState,
+  InputAction
 } from "redux/modules/pageLogin"
 
 interface Props {
-  actions: typeof pageLoginActions
+  inputAction: (params: InputAction) => void
+  loginAction: () => void
 }
 
 interface HandlerProps {
@@ -40,6 +42,7 @@ const Login: React.SFC<EnhancedProps> = ({
               type="email"
               value={input.email}
               onChange={handleChange("email")}
+              autoFocus
               required
             />
           </FormGroup>
@@ -71,9 +74,14 @@ const mapStateToProps = ({ pageLogin }: { pageLogin: PageLoginState }) => ({
   error: pageLogin.error
 })
 
-const mapDispatchToProps = (dispatch: any) => ({
-  actions: bindActionCreators({ ...pageLoginActions }, dispatch)
-})
+const mapDispatchToProps = (dispatch: Dispatch) =>
+  bindActionCreators(
+    {
+      inputAction: pageLoginActions.input,
+      loginAction: pageLoginActions.login.started
+    },
+    dispatch
+  )
 
 export default compose<EnhancedProps, {}>(
   connect(
@@ -81,14 +89,16 @@ export default compose<EnhancedProps, {}>(
     mapDispatchToProps
   ),
   withHandlers<EnhancedProps, HandlerProps>({
-    handleSubmit: ({ actions }) => (e: React.FormEvent<HTMLFormElement>) => {
+    handleSubmit: ({ loginAction }) => (
+      e: React.FormEvent<HTMLFormElement>
+    ) => {
       e.preventDefault()
-      actions.loginRequest()
+      loginAction()
     },
-    handleChange: ({ actions }) => (inputType: string) => (
+    handleChange: ({ inputAction }) => (inputType: string) => (
       e: React.FormEvent<HTMLInputElement>
     ) => {
-      actions.input({ inputType, value: e.currentTarget.value })
+      inputAction({ inputType, value: e.currentTarget.value })
     }
   })
 )(Login)
