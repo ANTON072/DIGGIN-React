@@ -3,22 +3,20 @@ import { BrowserRouter, Route, Switch } from "react-router-dom"
 import { injectGlobal } from "styled-components"
 import { compose } from "recompose"
 import baseStyle from "../misc/baseStyle"
-import Login from "pages/Login"
+import LoginPageContainer from "containers/PageLoginContainer"
 
-export default class App extends React.Component<{}> {
-  render() {
-    return (
-      <BrowserRouter>
-        <React.Fragment>
-          <Switch>
-            <Route path="/login" component={Login} />
-          </Switch>
-          {/* <LoggedIn loggedIn={true} /> */}
-        </React.Fragment>
-      </BrowserRouter>
-    )
-  }
-}
+const App: React.SFC<{}> = () => (
+  <BrowserRouter>
+    <React.Fragment>
+      <Switch>
+        <Route path="/login" component={LoginPageContainer} />
+      </Switch>
+      {/* <LoggedIn loggedIn={true} /> */}
+    </React.Fragment>
+  </BrowserRouter>
+)
+
+export default compose()(App)
 
 injectGlobal`
   ${baseStyle}
