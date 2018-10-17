@@ -4,6 +4,7 @@ import { call, fork, put, take, all, select } from "redux-saga/effects"
 import firebase from "firebase/app"
 import * as R from "ramda"
 import { withProps } from "recompose"
+import * as convertKeys from "convert-keys"
 
 export type UserState = {
   appUid: string | null
@@ -23,13 +24,32 @@ export type UserState = {
 const actionCreator = actionCreatorFactory()
 
 export const actions = {
-  register: actionCreator.async<{}, {}, {}>("user/REGISTER")
+  register: actionCreator.async<{ uid: string }, {}, {}>("user/REGISTER")
 }
 
 /**
  * Saga
  */
-function* userWorker() {}
+function* userWorker() {
+  while (true) {
+    const {
+      payload: { uid, appUid }
+    } = yield take(actions.register.started)
+    try {
+      const api = `https://api.github.com/user/${uid}`
+      const response = yield call(fetch, api)
+      const json = yield call([response, response.json])
+      console.log({ ...convertKeys.toCamel(json), appUid })
+      // yield put(
+      //   actions.register.done({
+      //     json: { ...convertKeys.toCamel(json), appUid }
+      //   })
+      // )
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}
 
 export function* userSaga() {
   yield all([fork(userWorker)])
