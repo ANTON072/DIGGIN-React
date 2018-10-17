@@ -4,15 +4,16 @@ import { fork, all } from "redux-saga/effects"
 import { composeWithDevTools } from "redux-devtools-extension"
 
 import app, { appSaga } from "./modules/app"
-import pageLogin, { pageLoginSaga } from "./modules/pageLogin"
+import pageLogin, { loginSaga } from "./modules/pageLogin"
+import user, { userSaga } from "./modules/user"
 
 const composeEnhancers = composeWithDevTools({})
-const reducer = combineReducers({ app, pageLogin })
+const reducer = combineReducers({ app, pageLogin, user })
 const sagaMiddleware = createSagaMiddleware()
 const middlewares = [sagaMiddleware]
 
 function* rootSaga() {
-  yield all([fork(appSaga), fork(pageLoginSaga)])
+  yield all([fork(appSaga), fork(loginSaga), fork(userSaga)])
 }
 
 type Props = {

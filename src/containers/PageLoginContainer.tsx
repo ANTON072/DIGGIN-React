@@ -2,83 +2,64 @@ import * as React from "react"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
 import styled from "styled-components"
-import { FormGroup, Button, InputGroup } from "@blueprintjs/core"
-import { compose, withHandlers } from "recompose"
+import { Button, Callout, Intent } from "@blueprintjs/core"
+import { FaGithub } from "react-icons/fa"
+import { compose, withHandlers, lifecycle } from "recompose"
+import { Redirect } from "react-router-dom"
 
 import {
   actions as pageLoginActions,
-  PageLoginState,
-  InputAction
+  LoginState
 } from "redux/modules/pageLogin"
-
-interface Props {
-  inputAction: (params: InputAction) => void
-  validateAction: () => void
-}
+import { withLoggedIn } from "redux/modules/user"
+import { AppToaster } from "factories/toaster"
 
 interface HandlerProps {
+  loginAction: () => void
   handleSubmit: React.FormEventHandler<HTMLFormElement>
-  handleChange: (inputType: string) => React.FormEventHandler<HTMLInputElement>
 }
 
-type EnhancedProps = Props & PageLoginState & HandlerProps
+type EnhancedProps = LoginState & HandlerProps
 
 const Login: React.SFC<EnhancedProps> = ({
-  input,
-  error,
+  loading,
   handleSubmit,
-  handleChange
+  error,
+  loggedIn
 }) => {
+  if (loggedIn) {
+    return <Redirect to="/" />
+  }
   return (
     <Root>
-      <Contents>
-        <form onSubmit={handleSubmit}>
-          <FormGroup
-            label="Your Email Address"
-            labelInfo="(required)"
-            helperText={error.email}
-          >
-            <InputGroup
-              type="email"
-              value={input.email}
-              onChange={handleChange("email")}
-              autoFocus
-              required
-            />
-          </FormGroup>
-          <FormGroup
-            label="Your Password"
-            labelInfo="(required)"
-            helperText={error.password}
-          >
-            <InputGroup
-              type="password"
-              value={input.password}
-              onChange={handleChange("password")}
-              required
-            />
-          </FormGroup>
-          <Buttons>
-            <LoginButton icon="log-in" type="submit">
-              Login
-            </LoginButton>
-          </Buttons>
-        </form>
-      </Contents>
+      <Form onSubmit={handleSubmit}>
+        {error.code && (
+          <ErrorBlock title="ログインエラー" intent={Intent.DANGER}>
+            <ul>
+              <li>{error.code}</li>
+              <li>{error.message}</li>
+            </ul>
+          </ErrorBlock>
+        )}
+        <LoginButton type="submit" loading={loading}>
+          <Icon size="1.2em" />
+          Sign in with GitHub
+        </LoginButton>
+      </Form>
     </Root>
   )
 }
 
-const mapStateToProps = ({ pageLogin }: { pageLogin: PageLoginState }) => ({
-  input: pageLogin.input,
-  error: pageLogin.error
+const mapStateToProps = ({ pageLogin }: { pageLogin: LoginState }) => ({
+  error: pageLogin.error,
+  loading: pageLogin.loading,
+  loggedIn: pageLogin.loggedIn
 })
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
-      inputAction: pageLoginActions.input,
-      validateAction: pageLoginActions.validate
+      loginAction: pageLoginActions.login.started
     },
     dispatch
   )
@@ -88,17 +69,21 @@ export default compose<EnhancedProps, {}>(
     mapStateToProps,
     mapDispatchToProps
   ),
-  withHandlers<EnhancedProps, HandlerProps>({
-    handleSubmit: ({ validateAction }) => (
+  withLoggedIn,
+  withHandlers<EnhancedProps, {}>({
+    handleSubmit: ({ loginAction }) => (
       e: React.FormEvent<HTMLFormElement>
     ) => {
       e.preventDefault()
-      validateAction()
-    },
-    handleChange: ({ inputAction }) => (inputType: string) => (
-      e: React.FormEvent<HTMLInputElement>
-    ) => {
-      inputAction({ inputType, value: e.currentTarget.value })
+      loginAction()
+    }
+  }),
+  lifecycle<EnhancedProps, {}>({
+    shouldComponentUpdate(nextProps) {
+      if (nextProps.loggedIn !== this.props.loggedIn) {
+        AppToaster.show({ message: "ログインしました", intent: Intent.PRIMARY })
+      }
+      return true
     }
   })
 )(Login)
@@ -112,15 +97,30 @@ const Root = styled.div`
   background-color: ${({ theme }) => theme.Colors.LIGHT_GRAY5};
 `
 
-const Contents = styled.div`
-  color: black;
+const Form = styled.form`
   width: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`
+
+const ErrorBlock = styled(Callout)`
+  margin-bottom: 20px;
+  ul {
+    padding: 0;
+  }
 `
 
 const LoginButton = styled(Button)`
   width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-weight: bold;
 `
 
-const Buttons = styled.div`
-  text-align: center;
+const Icon = styled(FaGithub)`
+  margin-right: 5px;
+  vertical-align: middle;
 `

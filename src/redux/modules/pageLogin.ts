@@ -1,92 +1,71 @@
 import { Action } from "redux"
 import actionCreatorFactory, { isType } from "typescript-fsa"
-import { call, fork, put, take, all, select } from "redux-saga/effects"
-import * as R from "ramda"
-import * as EmailValidator from "email-validator"
-
-export interface Input {
-  [key: string]: string
-  email: string
-  password: string
-}
+import { call, fork, put, take, all, resolve } from "redux-saga/effects"
+import firebase from "firebase/app"
 
 /**
  * Action Creator
  */
 const actionCreator = actionCreatorFactory()
 
-export interface InputAction {
-  inputType: string
-  value: string
+type ErrorProps = {
+  code: string
+  message: string
 }
 
 export const actions = {
-  input: actionCreator<InputAction>("pageLogin/INPUT"),
-  login: actionCreator.async("pageLogin/LOGIN"),
-  validate: actionCreator("pageLogin/VALIDATE"),
-  validateError: actionCreator<{ error: Input }>("pageLogin/VALIDATE_ERROR")
+  login: actionCreator.async<{}, {}, ErrorProps>("pageLogin/LOGIN")
 }
 
 /**
  * Saga
  */
-function* validateWorker() {
+function* loginWorker() {
   while (true) {
-    // バリデーション実行
-    yield take(actions.input)
-    const {
-      pageLogin: {
-        input: { email, password }
-      }
-    } = yield select()
-    const error: Input = {
-      email: "",
-      password: ""
+    yield take(actions.login.started)
+    try {
+      const provider = new firebase.auth.GithubAuthProvider()
+      const auth = firebase.auth()
+      yield call([auth, auth.signInWithPopup], provider)
+      yield put(
+        actions.login.done({
+          params: {},
+          result: {}
+        })
+      )
+      yield put.resolve
+    } catch (error) {
+      const { code, message } = error
+      yield put(
+        actions.login.failed({
+          params: {},
+          error: { code, message }
+        })
+      )
     }
-    let errorFlg = false
-    if (R.isEmpty(email)) {
-      error.email = "メールアドレスを入力してください"
-      errorFlg = true
-    }
-    if (R.isEmpty(password)) {
-      error.password = "パスワードを入力してください"
-      errorFlg = true
-    }
-    if (!EmailValidator.validate(email)) {
-      error.email = "メールアドレスの形式に誤りがあります"
-      errorFlg = true
-    }
-    // if (errorFlg) {
-    //   console.log("Error", error)
-    //   yield put(actions.validateError(error))
-    // }
-    console.log("validate worker")
   }
 }
 
-export function* pageLoginSaga() {
-  yield all([fork(validateWorker)])
+export function* loginSaga() {
+  yield all([fork(loginWorker)])
 }
 
 /**
  * Initial State
  */
 
-export type PageLoginState = {
+export type LoginState = {
   loading: boolean
-  input: Input
-  error: Input
+  loggedIn: boolean
+  error: ErrorProps
 }
 
 const initialState = {
   loading: false,
-  input: {
-    email: "",
-    password: ""
-  },
+  loggedIn: false,
   error: {
-    email: "",
-    password: ""
+    code: "",
+    message: ""
   }
 }
 
@@ -95,12 +74,18 @@ const initialState = {
  */
 
 export default function reducer(
-  state: PageLoginState = initialState,
+  state: LoginState = initialState,
   action: Action
-): PageLoginState {
-  if (isType(action, actions.input)) {
-    const { inputType, value } = action.payload
-    return R.evolve({ input: { [inputType]: R.always(value) } }, state)
+): LoginState {
+  if (isType(action, actions.login.started)) {
+    return { ...state, loading: true }
+  }
+  if (isType(action, actions.login.failed)) {
+    const { error } = action.payload
+    return { ...state, error, loading: false }
+  }
+  if (isType(action, actions.login.done)) {
+    return { ...state, loading: false, loggedIn: true }
   }
   return state
 }

@@ -1,20 +1,61 @@
 import * as React from "react"
 import { BrowserRouter, Route, Switch } from "react-router-dom"
-import { compose } from "recompose"
+import { connect } from "react-redux"
+import { bindActionCreators, Dispatch } from "redux"
+import firebase from "firebase/app"
+import { compose, lifecycle, withHandlers } from "recompose"
 
 import GlobalStyles from "components/GlobalStyles"
+import { actions as userActions } from "redux/modules/user"
 import LoginPageContainer from "containers/PageLoginContainer"
+import HomePageContainer from "containers/PageHomeContainer"
 
-const App: React.SFC<{}> = () => (
-  <BrowserRouter>
-    <React.Fragment>
-      <GlobalStyles />
-      <Switch>
-        <Route path="/login" component={LoginPageContainer} />
-      </Switch>
-      {/* <LoggedIn loggedIn={true} /> */}
-    </React.Fragment>
-  </BrowserRouter>
-)
+interface EnhancedProps {
+  registerAction: () => void
+  handleRegister: () => void
+}
 
-export default compose()(App)
+const App: React.SFC<EnhancedProps> = () => {
+  return (
+    <BrowserRouter>
+      <React.Fragment>
+        <GlobalStyles />
+        <Switch>
+          <Route exact path="/" component={HomePageContainer} />
+          <Route exact path="/login" component={LoginPageContainer} />
+        </Switch>
+      </React.Fragment>
+    </BrowserRouter>
+  )
+}
+
+const mapDispatchToProps = (dispatch: Dispatch) =>
+  bindActionCreators(
+    {
+      registerAction: userActions.register.started
+    },
+    dispatch
+  )
+
+export default compose<EnhancedProps, {}>(
+  connect(
+    null,
+    mapDispatchToProps
+  ),
+  withHandlers<EnhancedProps, {}>({
+    handleRegister: ({ registerAction }) => () => {
+      registerAction()
+    }
+  }),
+  lifecycle<EnhancedProps, {}>({
+    componentDidMount() {
+      // ログイン状態をリッスン
+      firebase.auth().onAuthStateChanged(user => {
+        console.log("state change")
+        if (user) {
+          this.props.handleRegister()
+        }
+      })
+    }
+  })
+)(App)
