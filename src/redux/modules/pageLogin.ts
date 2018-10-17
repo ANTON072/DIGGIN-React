@@ -56,10 +56,10 @@ function* validateWorker() {
       error.email = "メールアドレスの形式に誤りがあります"
       errorFlg = true
     }
-    if (errorFlg) {
-      console.log("Error", error)
-      yield put(actions.validateError(error))
-    }
+    // if (errorFlg) {
+    //   console.log("Error", error)
+    //   yield put(actions.validateError(error))
+    // }
     console.log("validate worker")
   }
 }

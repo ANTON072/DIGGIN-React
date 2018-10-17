@@ -10,6 +10,7 @@ const output = isProd ? "build" : "public"
 
 module.exports = {
   mode: ENV,
+  devtool: "source-map",
   entry: ["./src/index.tsx"],
   output: {
     filename: "[name].[hash].js",

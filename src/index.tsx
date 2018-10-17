@@ -6,10 +6,6 @@ import { Colors } from "@blueprintjs/core"
 import App from "./App"
 import configureStore from "./redux/configureStore"
 
-import "normalize.css"
-import "@blueprintjs/core/lib/css/blueprint.css"
-import "@blueprintjs/icons/lib/css/blueprint-icons.css"
-
 const { store, runSaga } = configureStore({})
 const theme = { Colors }
 

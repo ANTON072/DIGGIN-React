@@ -1,6 +1,9 @@
-import { css } from "styled-components"
+import { createGlobalStyle } from "styled-components"
+import "normalize.css"
+import "@blueprintjs/core/lib/css/blueprint.css"
+import "@blueprintjs/icons/lib/css/blueprint-icons.css"
 
-export default css`
+const GlobalStyles = createGlobalStyle`
   html {
     box-sizing: border-box;
     height: 100%;
@@ -37,8 +40,6 @@ export default css`
   a {
     transition: color 0.2s ease-out;
     text-decoration: none;
-  }
-  a:hover {
   }
   button {
     padding: 0;
@@ -98,3 +99,5 @@ export default css`
     cursor: pointer;
   }
 `
+
+export default GlobalStyles
