@@ -4,9 +4,9 @@
     "baseUrl": "src",
     "outDir": "build/dist",
     "module": "esnext",
-    "target": "es5",
+    "target": "esnext",
     "lib": [
-      "es6",
+      "es2017",
       "dom"
     ],
     "moduleResolution": "node",

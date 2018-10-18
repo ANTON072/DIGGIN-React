@@ -1,21 +1,26 @@
 import { Action } from "redux"
 import actionCreatorFactory, { isType } from "typescript-fsa"
 import { call, fork, put, take, all, select } from "redux-saga/effects"
-import firebase from "firebase/app"
+import firebase, { User } from "firebase/app"
 import * as R from "ramda"
 import { withProps } from "recompose"
-import * as convertKeys from "convert-keys"
+import camelcaseKeys from "camelcase-keys"
+
+interface UserProps {
+  login: string | undefined
+  avatarUrl: string | undefined
+  htmlUrl: string | undefined
+  name: string | undefined
+  company: string | undefined
+  blog: string | undefined
+  location: string | undefined
+  bio: string | undefined
+}
 
 export type UserState = {
-  appUid: string | null
-  login: string | null
-  avatarUrl: string | null
-  htmlUrl: string | null
-  name: string | null
-  company: string | null
-  blog: string | null
-  location: string | null
-  bio: string | null
+  loading: boolean
+  appUid: string | undefined
+  data: UserProps
 }
 
 /**
@@ -24,13 +29,18 @@ export type UserState = {
 const actionCreator = actionCreatorFactory()
 
 export const actions = {
-  register: actionCreator.async<{ uid: string }, {}, {}>("user/REGISTER")
+  register: actionCreator.async<
+    { uid?: string; appUid?: string },
+    UserProps,
+    {}
+  >("user/REGISTER"),
+  logout: actionCreator.async("user/LOGOUT")
 }
 
 /**
  * Saga
  */
-function* userWorker() {
+function* registerWorker() {
   while (true) {
     const {
       payload: { uid, appUid }
@@ -39,20 +49,36 @@ function* userWorker() {
       const api = `https://api.github.com/user/${uid}`
       const response = yield call(fetch, api)
       const json = yield call([response, response.json])
-      console.log({ ...convertKeys.toCamel(json), appUid })
-      // yield put(
-      //   actions.register.done({
-      //     json: { ...convertKeys.toCamel(json), appUid }
-      //   })
-      // )
+      if (!response.ok) {
+        throw new Error(JSON.stringify(json))
+      }
+      const keys = [
+        "login",
+        "avatarUrl",
+        "htmlUrl",
+        "name",
+        "company",
+        "blog",
+        "location",
+        "bio"
+      ]
+      const snakeJson = camelcaseKeys(json)
+      const filteredJson = R.pick<UserProps, string>(keys, snakeJson)
+      yield put(
+        actions.register.done({
+          params: { appUid },
+          result: filteredJson
+        })
+      )
     } catch (error) {
-      console.log(error)
+      console.error(error.message)
+      // TODO: ログアウト
     }
   }
 }
 
 export function* userSaga() {
-  yield all([fork(userWorker)])
+  yield all([fork(registerWorker)])
 }
 
 /**
@@ -60,15 +86,18 @@ export function* userSaga() {
  */
 
 const initialState = {
-  appUid: null,
-  login: null,
-  avatarUrl: null,
-  htmlUrl: null,
-  name: null,
-  company: null,
-  blog: null,
-  location: null,
-  bio: null
+  loading: false,
+  appUid: undefined,
+  data: {
+    login: undefined,
+    avatarUrl: undefined,
+    htmlUrl: undefined,
+    name: undefined,
+    company: undefined,
+    blog: undefined,
+    location: undefined,
+    bio: undefined
+  }
 }
 
 /**
@@ -79,6 +108,16 @@ export default function render(
   state: UserState = initialState,
   action: Action
 ): UserState {
+  if (isType(action, actions.register.started)) {
+    return { ...state, loading: true }
+  }
+  if (isType(action, actions.register.done)) {
+    const { params, result } = action.payload
+    return { ...state, loading: false, appUid: params.appUid, data: result }
+  }
+  if (isType(action, actions.register.failed)) {
+    return { ...state, loading: false }
+  }
   return state
 }
 

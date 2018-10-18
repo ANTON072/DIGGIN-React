@@ -3,6 +3,8 @@ import * as ReactDOM from "react-dom"
 import { Provider } from "react-redux"
 import { ThemeProvider } from "styled-components"
 import { Colors } from "@blueprintjs/core"
+import { BrowserRouter } from "react-router-dom"
+
 import App from "./App"
 import configureStore from "./redux/configureStore"
 import firebase from "firebase/app"
@@ -24,7 +26,9 @@ function initialize() {
   ReactDOM.render(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </ThemeProvider>
     </Provider>,
     document.getElementById("app-root")
