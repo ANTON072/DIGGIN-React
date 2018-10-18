@@ -84,23 +84,22 @@ function* registerWorker() {
 function* logoutWorker() {
   while (true) {
     yield take(actions.logout.started)
+    const auth = firebase.auth()
+    try {
+      yield call([auth, auth.signOut])
+      AppToaster.show({ message: "ログアウトしました", intent: Intent.PRIMARY })
+    } catch (error) {
+      console.error(error)
+      AppToaster.show({
+        message: "ログアウトに失敗しました",
+        intent: Intent.DANGER
+      })
+    }
   }
 }
 
 export function* userSaga() {
   yield all([fork(registerWorker), fork(logoutWorker)])
-  const auth = firebase.auth()
-  try {
-    yield call([auth, auth.signOut])
-    AppToaster.show({ message: "ログアウトしました", intent: Intent.PRIMARY })
-  } catch (error) {
-    // TODO: エラー処理
-    console.error(error)
-    AppToaster.show({
-      message: "ログアウトに失敗しました",
-      intent: Intent.DANGER
-    })
-  }
 }
 
 /**
