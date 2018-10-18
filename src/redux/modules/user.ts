@@ -23,6 +23,7 @@ interface UserProps {
 export type UserState = {
   loading: boolean
   appUid: string | undefined
+  error: boolean
   data: UserProps
 }
 
@@ -75,8 +76,7 @@ function* registerWorker() {
       )
     } catch (error) {
       console.error(error.message)
-      // ログアウト
-      yield put(actions.logout.started)
+      yield put(actions.register.failed({ params: {}, error: {} }))
     }
   }
 }
@@ -109,6 +109,7 @@ export function* userSaga() {
 const initialState = {
   loading: false,
   appUid: undefined,
+  error: false,
   data: {
     login: undefined,
     avatarUrl: undefined,
@@ -134,10 +135,16 @@ export default function render(
   }
   if (isType(action, actions.register.done)) {
     const { params, result } = action.payload
-    return { ...state, loading: false, appUid: params.appUid, data: result }
+    return {
+      ...state,
+      loading: false,
+      appUid: params.appUid,
+      data: result,
+      error: false
+    }
   }
   if (isType(action, actions.register.failed)) {
-    return { ...state, loading: false }
+    return { ...state, loading: false, error: true }
   }
   return state
 }
