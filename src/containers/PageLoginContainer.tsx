@@ -94,7 +94,6 @@ const Root = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: ${({ theme }) => theme.Colors.LIGHT_GRAY5};
 `
 
 const Form = styled.form`

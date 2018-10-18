@@ -19,9 +19,9 @@ const GlobalStyles = createGlobalStyle`
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", YuGothic,
       "ヒラギノ角ゴ ProN W3", Hiragino Kaku Gothic ProN, Arial, "メイリオ",
       Meiryo, sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.7;
-    color: #182026;
+    background-color: ${({ theme }) => theme.Colors.LIGHT_GRAY5};
   }
   h1,
   h2,

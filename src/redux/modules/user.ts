@@ -1,10 +1,13 @@
 import { Action } from "redux"
 import actionCreatorFactory, { isType } from "typescript-fsa"
 import { call, fork, put, take, all, select } from "redux-saga/effects"
-import firebase, { User } from "firebase/app"
+import firebase from "firebase/app"
 import * as R from "ramda"
 import { withProps } from "recompose"
 import camelcaseKeys from "camelcase-keys"
+import { Intent } from "@blueprintjs/core"
+
+import { AppToaster } from "factories/toaster"
 
 interface UserProps {
   login: string | undefined
@@ -72,13 +75,32 @@ function* registerWorker() {
       )
     } catch (error) {
       console.error(error.message)
-      // TODO: ログアウト
+      // ログアウト
+      yield put(actions.logout.started)
     }
   }
 }
 
+function* logoutWorker() {
+  while (true) {
+    yield take(actions.logout.started)
+  }
+}
+
 export function* userSaga() {
-  yield all([fork(registerWorker)])
+  yield all([fork(registerWorker), fork(logoutWorker)])
+  const auth = firebase.auth()
+  try {
+    yield call([auth, auth.signOut])
+    AppToaster.show({ message: "ログアウトしました", intent: Intent.PRIMARY })
+  } catch (error) {
+    // TODO: エラー処理
+    console.error(error)
+    AppToaster.show({
+      message: "ログアウトに失敗しました",
+      intent: Intent.DANGER
+    })
+  }
 }
 
 /**

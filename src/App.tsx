@@ -1,9 +1,14 @@
 import * as React from "react"
-import { Route, Switch } from "react-router-dom"
+import {
+  Route,
+  Switch,
+  withRouter,
+  RouteComponentProps
+} from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
 import firebase from "firebase/app"
-import { compose, lifecycle } from "recompose"
+import { compose, lifecycle, withHandlers } from "recompose"
 import * as R from "ramda"
 
 import GlobalStyles from "components/GlobalStyles"
@@ -11,9 +16,17 @@ import { actions as userActions } from "redux/modules/user"
 import LoginPageContainer from "containers/PageLoginContainer"
 import HomePageContainer from "containers/PageHomeContainer"
 
-interface EnhancedProps {
+interface ReduxProps {
   registerAction: ({ uid, appUid }: { uid: string; appUid: string }) => void
 }
+
+interface HandlersProps {
+  handleRedirect: () => void
+}
+
+type EnhancedProps = RouteComponentProps<{}> & ReduxProps & HandlersProps
+
+const authWhiteList = ["/login"]
 
 const App: React.SFC<EnhancedProps> = () => {
   return (
@@ -36,23 +49,31 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
   )
 
 export default compose<EnhancedProps, {}>(
+  withRouter,
   connect(
     null,
     mapDispatchToProps
   ),
+  withHandlers<EnhancedProps, {}>({
+    handleRedirect: ({ location, history }) => () => {
+      if (!authWhiteList.includes(location.pathname)) {
+        history.push("/login")
+      }
+    }
+  }),
   lifecycle<EnhancedProps, {}>({
     componentDidMount() {
+      const { location, history } = this.props
       // ログイン状態をリッスン
       firebase.auth().onAuthStateChanged((user: any) => {
-        // ログインしている場合
-        // ログイン判定は各ページのAPI疎通状態でチェックする
-        // APIの疎通がないページはログインチェックしない
         if (user) {
           const { uid } = user.providerData[0]
           this.props.registerAction({
             uid,
             appUid: user.uid
           })
+        } else {
+          this.props.handleRedirect()
         }
       })
     }
