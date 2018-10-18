@@ -1,6 +1,6 @@
 import { Action } from "redux"
 import actionCreatorFactory, { isType } from "typescript-fsa"
-import { call, fork, put, take, all, resolve } from "redux-saga/effects"
+import { call, fork, put, take, all } from "redux-saga/effects"
 import firebase from "firebase/app"
 
 /**
