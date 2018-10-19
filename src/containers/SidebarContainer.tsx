@@ -2,12 +2,13 @@ import * as React from "react"
 import styled from "styled-components"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
-import { compose, withStateHandlers, lifecycle } from "recompose"
+import { compose, withStateHandlers } from "recompose"
 import { ButtonGroup, Icon, Alert } from "@blueprintjs/core"
 import { Link } from "react-router-dom"
 
 import { actions as userActions, UserState } from "redux/modules/user"
 import ProfileContainer from "containers/ProfileContainer"
+import TagIndex from "components/TagIndex"
 
 interface OuterProps {
   user: UserState
@@ -46,6 +47,9 @@ export const Sidebar = ({
             Bookmarks
           </Link>
         </UserNav>
+      </Block>
+      <Block>
+        <TagIndex />
       </Block>
       <Block>
         <Footer>
