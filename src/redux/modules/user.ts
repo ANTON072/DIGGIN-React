@@ -107,7 +107,7 @@ export function* userSaga() {
  */
 
 const initialState = {
-  loading: false,
+  loading: true,
   appUid: undefined,
   error: false,
   data: {

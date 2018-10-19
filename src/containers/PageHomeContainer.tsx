@@ -1,5 +1,4 @@
 import * as React from "react"
-import { BrowserRouter, Route, Switch } from "react-router-dom"
 import { compose, lifecycle } from "recompose"
 import styled from "styled-components"
 

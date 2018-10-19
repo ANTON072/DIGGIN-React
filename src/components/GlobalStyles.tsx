@@ -16,9 +16,7 @@ const GlobalStyles = createGlobalStyle`
   }
   body {
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", YuGothic,
-      "ヒラギノ角ゴ ProN W3", Hiragino Kaku Gothic ProN, Arial, "メイリオ",
-      Meiryo, sans-serif;
+    font-family: Arial, "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, メイリオ, Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
     font-size: 13px;
     line-height: 1.7;
     background-color: ${({ theme }) => theme.Colors.LIGHT_GRAY5};

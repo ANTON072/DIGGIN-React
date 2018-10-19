@@ -6,6 +6,7 @@ import { Button, Callout, Intent } from "@blueprintjs/core"
 import { FaGithub } from "react-icons/fa"
 import { compose, withHandlers, lifecycle } from "recompose"
 import { Redirect } from "react-router-dom"
+import { Helmet } from "react-helmet"
 
 import {
   actions as pageLoginActions,
@@ -32,6 +33,9 @@ const Login: React.SFC<EnhancedProps> = ({
   }
   return (
     <Root>
+      <Helmet>
+        <title>ログイン</title>
+      </Helmet>
       <Form onSubmit={handleSubmit}>
         {error.code && (
           <ErrorBlock title="ログインエラー" intent={Intent.DANGER}>

@@ -13,6 +13,7 @@ import * as R from "ramda"
 
 import GlobalStyles from "components/GlobalStyles"
 import { actions as userActions } from "redux/modules/user"
+import MainLayout from "components/MainLayout"
 import LoginPageContainer from "containers/PageLoginContainer"
 import HomePageContainer from "containers/PageHomeContainer"
 
@@ -33,7 +34,7 @@ const App: React.SFC<EnhancedProps> = () => {
     <React.Fragment>
       <GlobalStyles />
       <Switch>
-        <Route exact path="/" component={HomePageContainer} />
+        <MainLayout exact path="/" component={HomePageContainer} />
         <Route exact path="/login" component={LoginPageContainer} />
       </Switch>
     </React.Fragment>
