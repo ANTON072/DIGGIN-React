@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "^3.7.0",
+    "@blueprintjs/select": "^3.2.0",
     "camelcase-keys": "^5.0.0",
     "classnames": "^2.2.6",
     "firebase": "^5.5.4",

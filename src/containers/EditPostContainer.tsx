@@ -24,7 +24,7 @@ export const EditPost: React.SFC<{}> = ({ user }) => {
   return (
     <Root>
       <Wrapper>
-        <MyAvatar
+        <Avatar
           className={loadingStyle(loading)}
           avatarUrl={avatarUrl}
           width={40}
@@ -74,8 +74,6 @@ const Loading = styled(Spinner)`
 const Form = styled.form`
   width: calc(100% - 55px);
 `
-
-const MyAvatar = styled(Avatar)``
 
 const ButtonBlock = styled.div`
   margin-top: 15px;
