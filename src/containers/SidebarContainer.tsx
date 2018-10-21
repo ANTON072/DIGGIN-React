@@ -6,12 +6,12 @@ import { compose, withStateHandlers } from "recompose"
 import { ButtonGroup, Icon, Alert } from "@blueprintjs/core"
 import { Link } from "react-router-dom"
 
-import { actions as userActions, UserState } from "redux/modules/user"
+import { actions as userActions, UserProps } from "redux/modules/user"
 import ProfileContainer from "containers/ProfileContainer"
 import TagIndex from "components/TagIndex"
 
 interface OuterProps {
-  user: UserState
+  user: UserProps
   confirm: boolean
   logoutAction: () => void
   handleLogout: (show: boolean) => void
@@ -40,10 +40,10 @@ export const Sidebar = ({
       <ProfileContainer />
       <Block>
         <UserNav fill loading={user.loading ? 1 : 0}>
-          <Link to={`/${user.data.login}`} className="bp3-button">
+          <Link to={`/${user.login}`} className="bp3-button">
             My Diggin'
           </Link>
-          <Link to={`/${user.data.login}/bookmarks`} className="bp3-button">
+          <Link to={`/${user.login}/bookmarks`} className="bp3-button">
             Bookmarks
           </Link>
         </UserNav>
@@ -115,7 +115,7 @@ export default compose<EnhancedProps, EnhancedProps>(
       confirm: false
     }),
     {
-      handleLogout: (state, props) => show => ({
+      handleLogout: state => show => ({
         ...state,
         confirm: show
       })

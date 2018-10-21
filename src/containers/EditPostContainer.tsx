@@ -13,14 +13,11 @@ import {
 } from "@blueprintjs/core"
 
 import loadingStyle from "helpers/loadingStyle"
-import { UserState } from "redux/modules/user"
+import { UserProps } from "redux/modules/user"
 import Avatar from "components/Avatar"
 
 export const EditPost: React.SFC<{}> = ({ user }) => {
-  const {
-    data: { login, avatarUrl, htmlUrl, name, company, blog, location, bio },
-    loading
-  } = user
+  const { login, avatarUrl, htmlUrl, name, loading } = user
   return (
     <Root>
       <Wrapper>

@@ -18,7 +18,9 @@ import LoginPageContainer from "containers/PageLoginContainer"
 import HomePageContainer from "containers/PageHomeContainer"
 
 interface ReduxProps {
-  registerAction: ({ uid, appUid }: { uid: string; appUid: string }) => void
+  registerAction: (
+    { githubId, userId }: { githubId: string; userId: string }
+  ) => void
 }
 
 interface HandlersProps {
@@ -64,14 +66,13 @@ export default compose<EnhancedProps, {}>(
   }),
   lifecycle<EnhancedProps, {}>({
     componentDidMount() {
-      const { location, history } = this.props
       // ログイン状態をリッスン
       firebase.auth().onAuthStateChanged((user: any) => {
         if (user) {
           const { uid } = user.providerData[0]
           this.props.registerAction({
-            uid,
-            appUid: user.uid
+            githubId: uid,
+            userId: user.uid
           })
         } else {
           this.props.handleRedirect()

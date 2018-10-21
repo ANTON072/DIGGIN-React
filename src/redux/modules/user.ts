@@ -9,22 +9,18 @@ import { Intent } from "@blueprintjs/core"
 
 import { AppToaster } from "factories/toaster"
 
-interface UserProps {
+interface GHProps {
   login: string | undefined
   avatarUrl: string | undefined
   htmlUrl: string | undefined
   name: string | undefined
-  company: string | undefined
-  blog: string | undefined
-  location: string | undefined
-  bio: string | undefined
 }
 
-export type UserState = {
+export interface UserProps extends GHProps {
   loading: boolean
-  appUid: string | undefined
+  userId: string | undefined
+  githubId: string | undefined
   error: boolean
-  data: UserProps
 }
 
 /**
@@ -34,7 +30,7 @@ const actionCreator = actionCreatorFactory()
 
 export const actions = {
   register: actionCreator.async<
-    { uid?: string; appUid?: string },
+    { githubId?: string; userId?: string },
     UserProps,
     {}
   >("user/REGISTER"),
@@ -47,30 +43,21 @@ export const actions = {
 function* registerWorker() {
   while (true) {
     const {
-      payload: { uid, appUid }
+      payload: { githubId, userId }
     } = yield take(actions.register.started)
     try {
-      const api = `https://api.github.com/user/${uid}`
+      const api = `https://api.github.com/user/${githubId}`
       const response = yield call(fetch, api)
       const json = yield call([response, response.json])
       if (!response.ok) {
         throw new Error(JSON.stringify(json))
       }
-      const keys = [
-        "login",
-        "avatarUrl",
-        "htmlUrl",
-        "name",
-        "company",
-        "blog",
-        "location",
-        "bio"
-      ]
+      const keys = ["login", "avatarUrl", "htmlUrl", "name"]
       const snakeJson = camelcaseKeys(json)
       const filteredJson = R.pick<UserProps, string>(keys, snakeJson)
       yield put(
         actions.register.done({
-          params: { appUid },
+          params: { githubId, userId },
           result: filteredJson
         })
       )
@@ -108,18 +95,13 @@ export function* userSaga() {
 
 const initialState = {
   loading: true,
-  appUid: undefined,
-  error: false,
-  data: {
-    login: undefined,
-    avatarUrl: undefined,
-    htmlUrl: undefined,
-    name: undefined,
-    company: undefined,
-    blog: undefined,
-    location: undefined,
-    bio: undefined
-  }
+  userId: undefined,
+  githubId: undefined,
+  login: undefined,
+  avatarUrl: undefined,
+  htmlUrl: undefined,
+  name: undefined,
+  error: false
 }
 
 /**
@@ -127,9 +109,9 @@ const initialState = {
  */
 
 export default function render(
-  state: UserState = initialState,
+  state: UserProps = initialState,
   action: Action
-): UserState {
+): UserProps {
   if (isType(action, actions.register.started)) {
     return { ...state, loading: true }
   }
@@ -137,9 +119,10 @@ export default function render(
     const { params, result } = action.payload
     return {
       ...state,
+      ...result,
       loading: false,
-      appUid: params.appUid,
-      data: result,
+      userId: params.userId,
+      githubId: params.githubId,
       error: false
     }
   }
@@ -152,15 +135,15 @@ export default function render(
 /**
  * misc
  */
-export function getAppUid(): string | undefined {
+export function getUserId(): string | null {
   const currentUser = firebase.auth().currentUser
-  return currentUser != null ? currentUser.uid : undefined
+  return currentUser != null ? currentUser.uid : null
 }
 
 export const withAppUid = withProps(() => {
-  return { appUid: getAppUid() }
+  return { appUid: getUserId() }
 })
 
 export const withLoggedIn = withProps(() => {
-  return { loggedIn: R.is(String, getAppUid()) }
+  return { loggedIn: R.is(String, getUserId()) }
 })

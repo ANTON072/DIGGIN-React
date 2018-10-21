@@ -5,14 +5,11 @@ import { compose } from "recompose"
 import { FaGithub } from "react-icons/fa"
 
 import loadingStyle from "helpers/loadingStyle"
-import { UserState } from "redux/modules/user"
+import { UserProps } from "redux/modules/user"
 import Avatar from "components/Avatar"
 
-export const Profile: React.SFC<{ user: UserState }> = ({ user }) => {
-  const {
-    data: { login, avatarUrl, htmlUrl, name, company, blog, location, bio },
-    loading
-  } = user
+export const Profile: React.SFC<{ user: UserProps }> = ({ user }) => {
+  const { login, avatarUrl, htmlUrl, name, loading } = user
   return (
     <Root>
       <a href={htmlUrl} target="_blank">
@@ -76,7 +73,7 @@ const Main = styled.div`
   }
 `
 
-const mapStateToProps = ({ user }: { user: UserState }) => ({
+const mapStateToProps = ({ user }: { user: UserProps }) => ({
   user
 })
 
