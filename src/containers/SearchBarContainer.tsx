@@ -14,10 +14,6 @@ export const SearchBar: React.SFC<{}> = () => {
   )
 }
 
-const Root = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 15px;
-`
+const Root = styled.div``
 
 export default compose(connect(null))(SearchBar)

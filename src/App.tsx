@@ -1,35 +1,37 @@
 import * as React from "react"
-import {
-  Route,
-  Switch,
-  withRouter,
-  RouteComponentProps
-} from "react-router-dom"
+import { Switch, withRouter, RouteComponentProps } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
 import firebase from "firebase/app"
 import { compose, lifecycle, withHandlers } from "recompose"
-import * as R from "ramda"
 
 import GlobalStyles from "components/GlobalStyles"
-import { actions as userActions } from "redux/modules/user"
+import {
+  actions as userActions,
+  withLoggedIn,
+  UserProps
+} from "redux/modules/user"
 import MainLayout from "components/MainLayout"
-import LoginPageContainer from "containers/PageLoginContainer"
 import HomePageContainer from "containers/PageHomeContainer"
+import { DateTime } from "luxon"
 
 interface ReduxProps {
+  user: UserProps
+  loggedIn: boolean
   registerAction: (
-    { githubId, userId }: { githubId: string; userId: string }
+    {
+      githubId,
+      userId,
+      loggedIn
+    }: { githubId: string; userId: string; loggedIn: boolean }
   ) => void
 }
 
-interface HandlersProps {
-  handleRedirect: () => void
+interface InnerProps {
+  handleRegister: (githubId: string, userId: string) => void
 }
 
-type EnhancedProps = RouteComponentProps<{}> & ReduxProps & HandlersProps
-
-const authWhiteList = ["/login"]
+type EnhancedProps = RouteComponentProps<{}> & ReduxProps & InnerProps
 
 const App: React.SFC<EnhancedProps> = () => {
   return (
@@ -37,11 +39,14 @@ const App: React.SFC<EnhancedProps> = () => {
       <GlobalStyles />
       <Switch>
         <MainLayout exact path="/" component={HomePageContainer} />
-        <Route exact path="/login" component={LoginPageContainer} />
       </Switch>
     </React.Fragment>
   )
 }
+
+const mapStateToProps = ({ user }: { user: UserProps }) => ({
+  user
+})
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
@@ -51,17 +56,23 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
     dispatch
   )
 
-export default compose<EnhancedProps, {}>(
+export default compose<EnhancedProps, InnerProps>(
   withRouter,
   connect(
-    null,
+    mapStateToProps,
     mapDispatchToProps
   ),
-  withHandlers<EnhancedProps, {}>({
-    handleRedirect: ({ location, history }) => () => {
-      if (!authWhiteList.includes(location.pathname)) {
-        history.push("/login")
-      }
+  withLoggedIn,
+  withHandlers<EnhancedProps, InnerProps>({
+    handleRegister: ({ user, registerAction, loggedIn }) => (
+      githubId: string,
+      userId: string
+    ) => {
+      registerAction({
+        userId,
+        loggedIn,
+        githubId
+      })
     }
   }),
   lifecycle<EnhancedProps, {}>({
@@ -69,13 +80,21 @@ export default compose<EnhancedProps, {}>(
       // ログイン状態をリッスン
       firebase.auth().onAuthStateChanged((user: any) => {
         if (user) {
-          const { uid } = user.providerData[0]
-          this.props.registerAction({
-            githubId: uid,
-            userId: user.uid
-          })
-        } else {
-          this.props.handleRedirect()
+          const now = DateTime.local()
+            .toUTC()
+            .toMillis()
+          const updatedAt = user.updatedAt
+          console.log(updatedAt)
+          if (!this.props.user.userId) {
+            // 未登録の場合
+            const { uid } = user.providerData[0]
+            this.props.handleRegister(uid, user.uid)
+          }
+          // console.log(
+          //   DateTime.local(user.metadata.lastSignInTime)
+          //     .toUTC()
+          //     .toMillis()
+          // )
         }
       })
     }

@@ -1,14 +1,18 @@
 import * as React from "react"
 import styled from "styled-components"
-import { connect } from "react-redux"
-import { compose } from "recompose"
-import { FaGithub } from "react-icons/fa"
 
 import loadingStyle from "helpers/loadingStyle"
 import { UserProps } from "redux/modules/user"
 import Avatar from "components/Avatar"
+import { FaGithub } from "react-icons/fa"
 
-export const Profile: React.SFC<{ user: UserProps }> = ({ user }) => {
+interface Props {
+  user: UserProps
+}
+
+type EnhancedProps = Props
+
+export const Profile: React.SFC<EnhancedProps> = ({ user }) => {
   const { login, avatarUrl, htmlUrl, name, loading } = user
   return (
     <Root>
@@ -32,9 +36,18 @@ export const Profile: React.SFC<{ user: UserProps }> = ({ user }) => {
   )
 }
 
+export default Profile
+
 const Root = styled.div`
   background-color: #fff;
   position: relative;
+  .link-text {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: ${({ theme }) => theme.Colors.LIGHT_GRAY1};
+    visibility: hidden;
+  }
   > a {
     position: relative;
     text-decoration: none;
@@ -48,13 +61,6 @@ const Root = styled.div`
         visibility: visible;
       }
     }
-  }
-  .link-text {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    color: ${({ theme }) => theme.Colors.LIGHT_GRAY1};
-    visibility: hidden;
   }
 `
 
@@ -72,9 +78,3 @@ const Main = styled.div`
     color: ${({ theme }) => theme.Colors.GRAY3};
   }
 `
-
-const mapStateToProps = ({ user }: { user: UserProps }) => ({
-  user
-})
-
-export default compose<any, any>(connect(mapStateToProps))(Profile)

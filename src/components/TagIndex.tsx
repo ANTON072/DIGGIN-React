@@ -3,9 +3,9 @@ import styled from "styled-components"
 import { compose } from "recompose"
 import { Tag } from "@blueprintjs/core"
 
-const TagIndex: React.SFC<{}> = () => {
+const TagIndex: React.SFC<{}> = ({ ...rest }) => {
   return (
-    <Root>
+    <Root {...rest}>
       <List>util</List>
       <List>redux</List>
       <List>router</List>

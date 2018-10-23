@@ -2,7 +2,7 @@ import * as React from "react"
 import styled from "styled-components"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
-import { compose, withStateHandlers } from "recompose"
+import { compose } from "recompose"
 import {
   EditableText,
   Card,
@@ -16,8 +16,15 @@ import loadingStyle from "helpers/loadingStyle"
 import { UserProps } from "redux/modules/user"
 import Avatar from "components/Avatar"
 
-export const EditPost: React.SFC<{}> = ({ user }) => {
+interface EnhancedProps {
+  user: UserProps
+}
+
+export const EditPost: React.SFC<EnhancedProps> = ({ user }) => {
   const { login, avatarUrl, htmlUrl, name, loading } = user
+  if (user.userId == null) {
+    return <React.Fragment />
+  }
   return (
     <Root>
       <Wrapper>
@@ -82,13 +89,14 @@ const PostButton = styled(Button)`
 `
 
 const EditBlock = styled(EditableText)`
-  /* width: 100%; */
   margin-top: 15px;
   background-color: #fff;
 `
 
-const mapStateToProps = ({ user }: { user: UserState }) => ({
+const mapStateToProps = ({ user }: { user: UserProps }) => ({
   user
 })
 
-export default compose(connect(mapStateToProps))(EditPost)
+export default compose<EnhancedProps, EnhancedProps>(connect(mapStateToProps))(
+  EditPost
+)

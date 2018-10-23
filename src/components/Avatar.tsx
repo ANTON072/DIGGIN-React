@@ -1,7 +1,6 @@
 import * as React from "react"
 import styled from "styled-components"
-
-import loadingStyle from "helpers/loadingStyle"
+import { compose, pure } from "recompose"
 
 type Props = React.ImgHTMLAttributes<{}> & {
   avatarUrl: string | undefined
@@ -24,7 +23,7 @@ const Avatar: React.SFC<Props> = ({ avatarUrl, alt, ...props }) => {
   )
 }
 
-export default Avatar
+export default compose<Props, Props>(pure)(Avatar)
 
 const Root = styled.div`
   width: ${({ width }: any) => `${width}px`};

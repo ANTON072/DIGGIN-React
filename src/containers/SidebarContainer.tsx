@@ -2,123 +2,52 @@ import * as React from "react"
 import styled from "styled-components"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
-import { compose, withStateHandlers } from "recompose"
-import { ButtonGroup, Icon, Alert } from "@blueprintjs/core"
-import { Link } from "react-router-dom"
+import { compose } from "recompose"
 
 import { actions as userActions, UserProps } from "redux/modules/user"
-import ProfileContainer from "containers/ProfileContainer"
-import TagIndex from "components/TagIndex"
+import SidebarLogo from "components/SidebarLogo"
+import SidebarContents, { SidebarProps } from "components/SidebarContents"
 
-interface OuterProps {
-  user: UserProps
-  confirm: boolean
-  logoutAction: () => void
-  handleLogout: (show: boolean) => void
-}
-
-type EnhancedProps = OuterProps
-
-export const Sidebar = ({
+export const Sidebar: React.SFC<SidebarProps> = ({
   user,
   handleLogout,
-  logoutAction,
-  confirm,
   ...rest
-}: EnhancedProps) => {
+}) => {
   return (
     <Root {...rest}>
-      <Alert
-        isOpen={confirm}
-        cancelButtonText="キャンセル"
-        confirmButtonText="ログアウトする"
-        onCancel={() => handleLogout(false)}
-        onConfirm={logoutAction}
-      >
-        <p>ログアウトしますか？</p>
-      </Alert>
-      <ProfileContainer />
-      <Block>
-        <UserNav fill loading={user.loading ? 1 : 0}>
-          <Link to={`/${user.login}`} className="bp3-button">
-            My Diggin'
-          </Link>
-          <Link to={`/${user.login}/bookmarks`} className="bp3-button">
-            Bookmarks
-          </Link>
-        </UserNav>
-      </Block>
-      <Block>
-        <TagIndex />
-      </Block>
-      <Block>
-        <Footer>
-          <LogoutButton
-            loading={user.loading ? 1 : 0}
-            icon="log-out"
-            onClick={() => handleLogout(true)}
-          />
-        </Footer>
-      </Block>
+      <SidebarLogo />
+      <Main>
+        <SidebarContents user={user} handleLogout={handleLogout} />
+      </Main>
     </Root>
   )
 }
 
-const Root = styled.div`
-  padding: 15px;
-  background-color: #fff;
-`
-const Block = styled.div`
-  margin-top: 15px;
-`
-
-const Footer = styled.div`
-  text-align: right;
-`
-
-const UserNav = styled(ButtonGroup)`
-  pointer-events: ${(props: { loading: number }) =>
-    props.loading ? "none" : "auto"};
-  opacity: ${(props: { loading: number }) => (props.loading ? 0.5 : 1)};
-`
-
-const LogoutButton = styled(Icon)`
-  cursor: pointer;
-  color: ${({ theme }) => theme.Colors.LIGHT_GRAY1};
-  pointer-events: ${(props: { loading: number }) =>
-    props.loading ? "none" : "auto"};
-  opacity: ${(props: { loading: number }) => (props.loading ? 0.5 : 1)};
-  &:hover {
-    color: ${({ theme }) => theme.Colors.BLUE2};
-  }
-`
-
-const mapStateToProps = ({ user }: { user: UserState }) => ({
+const mapStateToProps = ({ user }: { user: UserProps }) => ({
   user
 })
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
-      logoutAction: userActions.logout.started
+      handleLogout: userActions.logout.started
     },
     dispatch
   )
 
-export default compose<EnhancedProps, EnhancedProps>(
+export default compose<SidebarProps, {}>(
   connect(
     mapStateToProps,
     mapDispatchToProps
-  ),
-  withStateHandlers(
-    () => ({
-      confirm: false
-    }),
-    {
-      handleLogout: state => show => ({
-        ...state,
-        confirm: show
-      })
-    }
   )
 )(Sidebar)
+
+const Root = styled.div`
+  width: 291px;
+`
+
+const Main = styled.div`
+  padding: 15px;
+  margin-top: 15px;
+  background-color: #fff;
+`

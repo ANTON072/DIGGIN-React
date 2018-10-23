@@ -2,6 +2,7 @@ import * as React from "react"
 import { Route } from "react-router-dom"
 import styled from "styled-components"
 
+import HeaderContainer from "containers/HeaderContainer"
 import SidebarContainer from "containers/SidebarContainer"
 
 const MainLayout: React.SFC<any> = ({
@@ -14,8 +15,9 @@ const MainLayout: React.SFC<any> = ({
     {...rest}
     render={matchProps => (
       <Root>
-        <Sidebar />
+        <SidebarContainer />
         <Main>
+          <HeaderContainer />
           <Component {...matchProps} />
         </Main>
       </Root>
@@ -32,10 +34,6 @@ const Root = styled.div`
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-`
-
-const Sidebar = styled(SidebarContainer)`
-  width: 291px;
 `
 
 const Main = styled.main`
