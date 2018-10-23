@@ -4,7 +4,7 @@
 
 **Post**
 
-```json
+```
 {
   [POST_ID]: {
     repo_id: :string,
@@ -44,7 +44,7 @@
 
 **User**
 
-```json
+```
 {
   [USER_ID]: {
     posts: {
@@ -62,7 +62,7 @@
 
 **Tag**
 
-```json
+```
 {
   [TAG_ID]: {
     name: :string,
