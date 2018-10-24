@@ -19,11 +19,7 @@ interface ReduxProps {
   user: UserProps
   loggedIn: boolean
   registerAction: (
-    {
-      githubId,
-      userId,
-      loggedIn
-    }: { githubId: string; userId: string; loggedIn: boolean }
+    { githubId, userId, loggedIn }: { githubId: string; userId: string }
   ) => void
 }
 
@@ -64,13 +60,12 @@ export default compose<EnhancedProps, InnerProps>(
   ),
   withLoggedIn,
   withHandlers<EnhancedProps, InnerProps>({
-    handleRegister: ({ user, registerAction, loggedIn }) => (
+    handleRegister: ({ user, registerAction }) => (
       githubId: string,
       userId: string
     ) => {
       registerAction({
         userId,
-        loggedIn,
         githubId
       })
     }
@@ -80,21 +75,9 @@ export default compose<EnhancedProps, InnerProps>(
       // ログイン状態をリッスン
       firebase.auth().onAuthStateChanged((user: any) => {
         if (user) {
-          const now = DateTime.local()
-            .toUTC()
-            .toMillis()
-          const updatedAt = user.updatedAt
-          console.log(updatedAt)
-          if (!this.props.user.userId) {
-            // 未登録の場合
-            const { uid } = user.providerData[0]
-            this.props.handleRegister(uid, user.uid)
-          }
-          // console.log(
-          //   DateTime.local(user.metadata.lastSignInTime)
-          //     .toUTC()
-          //     .toMillis()
-          // )
+          console.log("firebase loggedin")
+          const { uid } = user.providerData[0]
+          this.props.handleRegister(uid, user.uid)
         }
       })
     }

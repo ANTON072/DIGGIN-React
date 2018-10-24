@@ -7,10 +7,9 @@ import storage from "redux-persist/lib/storage"
 
 import app, { appSaga } from "./modules/app"
 import user, { userSaga } from "./modules/user"
-import entities from "./modules/entities"
 
 const composeEnhancers = composeWithDevTools({})
-const reducer = combineReducers({ app, user, entities })
+const reducer = combineReducers({ app, user })
 const sagaMiddleware = createSagaMiddleware()
 const middlewares = [sagaMiddleware]
 const persistConfig = {

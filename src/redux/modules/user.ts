@@ -23,7 +23,6 @@ export interface UserProps extends GHProps {
   userId: string | undefined
   githubId: string | undefined
   error: boolean
-  createdAt: number | undefined
   updatedAt: number | undefined
 }
 
@@ -36,7 +35,7 @@ export const actions = {
   login: actionCreator.async<{}, {}, {}>("user/LOGIN"),
   logout: actionCreator.async("user/LOGOUT"),
   register: actionCreator.async<
-    { loggedIn: boolean; githubId?: string; userId?: string },
+    { githubId?: string; userId?: string },
     UserProps,
     {}
   >("user/REGISTER")
@@ -48,9 +47,24 @@ export const actions = {
 function* registerWorker() {
   while (true) {
     const {
-      payload: { githubId, userId, loggedIn }
+      payload: { githubId, userId }
     } = yield take(actions.register.started)
     try {
+      // 登録ユーザーか確認する
+      // 前回訪問時より1日以上立っていたらユーザー情報を更新する
+      const { user } = yield select()
+      if (user.updatedAt && Date.now() - user.updatedAt < 86400000) {
+        return
+      }
+      // DB登録
+      const db = firebaseApp.firestore
+      const userRef = db.doc(`User/${userId}`)
+      const me = yield call([userRef, userRef.get])
+      if (!me.exists) {
+        yield call([userRef, userRef.set], { favorites: [], posts: [] })
+      }
+      // Reducer登録
+      console.log("registerReducre")
       const api = `https://api.github.com/user/${githubId}`
       const response = yield call(fetch, api)
       const json = yield call([response, response.json])
@@ -60,49 +74,16 @@ function* registerWorker() {
       const keys = ["login", "avatarUrl", "htmlUrl", "name"]
       const snakeJson = camelcaseKeys(json)
       const filteredJson = R.pick<UserProps, string>(keys, snakeJson)
-      const registerData = { ...filteredJson, githubId, userId }
-      const db = firebaseApp.firestore
-      const userRef = db.doc(`User/${userId}`)
-      const meRef = yield call([userRef, userRef.get])
-      const me = meRef.data()
-      const now = DateTime.local()
-        .toUTC()
-        .toMillis()
-      if (me) {
-        // 登録済み
-        registerData.updatedAt = now
-        registerData.createdAt = me.createdAt
-      } else {
-        // 新規登録
-        registerData.createdAt = now
-        registerData.updatedAt = now
+      const updatedAt = Date.now()
+      const registerData = {
+        ...filteredJson,
+        githubId,
+        userId,
+        updatedAt
       }
-      yield call([userRef, userRef.set], registerData)
-
-      // yield call([userRef, userRef.set], registerData)
-      // userRef.set(registerData)
-
-      // const userModel = userRef.doc(userId).set(registerData)
-      // const userModelResponse = yield call(userModel.set, registerData)
-      // const userModel = yield call(userRef.doc,)
-      // const me = yield call(query.get)
-      // console.log(me)
-      // const querySnapshot = yield call(
-      //   [collection, collection.add],
-      //   registerData
-      // )
-      // console.log(querySnapshot)
-      // console.log("querySnapshot:", querySnapshot.length)
-      // querySnapshot.forEach(doc => {
-      //   console.log(doc.data())
-      //   // console.log(`${doc.id} => ${doc.data()}`)
-      // })
-      // DBに登録
-      // const dbResult = yield call([db, db.add], registerData)
-      // console.log(dbResult)
       yield put(
         actions.register.done({
-          params: { githubId, userId, loggedIn },
+          params: { githubId, userId },
           result: registerData
         })
       )
