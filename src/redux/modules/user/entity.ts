@@ -3,27 +3,25 @@ import actionCreatorFactory, { isType } from "typescript-fsa"
 import { call, fork, put, take, all, select } from "redux-saga/effects"
 import firebase from "firebase/app"
 import * as R from "ramda"
-import { withProps } from "recompose"
 import camelcaseKeys from "camelcase-keys"
 import { Intent } from "@blueprintjs/core"
-import { DateTime } from "luxon"
 
 import firebaseApp from "firebase"
 import { AppToaster } from "factories/toaster"
 
 interface GHProps {
-  login: string | undefined
-  avatarUrl: string | undefined
-  htmlUrl: string | undefined
-  name: string | undefined
+  login?: string | undefined
+  avatarUrl?: string | undefined
+  htmlUrl?: string | undefined
+  name?: string | undefined
 }
 
-export interface UserProps extends GHProps {
-  loading: boolean
-  userId: string | undefined
-  githubId: string | undefined
-  error: boolean
-  updatedAt: number | undefined
+export interface UserEntityProps extends GHProps {
+  userId?: string | undefined
+  githubId?: string | undefined
+  updatedAt?: number | undefined
+  favorites?: string[]
+  posts?: string[]
 }
 
 /**
@@ -32,13 +30,14 @@ export interface UserProps extends GHProps {
 const actionCreator = actionCreatorFactory()
 
 export const actions = {
-  login: actionCreator.async<{}, {}, {}>("user/LOGIN"),
-  logout: actionCreator.async("user/LOGOUT"),
+  login: actionCreator.async<{}, {}, {}>("user/login"),
+  logout: actionCreator.async("user/logout"),
   register: actionCreator.async<
     { githubId?: string; userId?: string },
-    UserProps,
+    UserEntityProps,
     {}
-  >("user/REGISTER")
+  >("user/REGISTER"),
+  update: actionCreator<UserEntityProps>("user/UPDATE")
 }
 
 /**
@@ -53,18 +52,24 @@ function* registerWorker() {
       // 登録ユーザーか確認する
       // 前回訪問時より1日以上立っていたらユーザー情報を更新する
       const { user } = yield select()
-      if (user.updatedAt && Date.now() - user.updatedAt < 86400000) {
+      if (
+        user.entity.updatedAt &&
+        Date.now() - user.entity.updatedAt < 86400000
+      ) {
         return
       }
       // DB登録
       const db = firebaseApp.firestore
       const userRef = db.doc(`User/${userId}`)
       const me = yield call([userRef, userRef.get])
-      if (!me.exists) {
+      if (me.exists) {
+        // DBからユーザー情報を取得してReducerに登録する
+        const { favorites, posts } = me.data()
+        yield put(actions.update({ favorites, posts }))
+      } else {
         yield call([userRef, userRef.set], { favorites: [], posts: [] })
       }
       // Reducer登録
-      console.log("registerReducre")
       const api = `https://api.github.com/user/${githubId}`
       const response = yield call(fetch, api)
       const json = yield call([response, response.json])
@@ -73,7 +78,7 @@ function* registerWorker() {
       }
       const keys = ["login", "avatarUrl", "htmlUrl", "name"]
       const snakeJson = camelcaseKeys(json)
-      const filteredJson = R.pick<UserProps, string>(keys, snakeJson)
+      const filteredJson = R.pick<UserEntityProps, string>(keys, snakeJson)
       const updatedAt = Date.now()
       const registerData = {
         ...filteredJson,
@@ -139,7 +144,7 @@ function* logoutWorker() {
   }
 }
 
-export function* userSaga() {
+export function* userEntitySaga() {
   yield all([fork(registerWorker), fork(loginWorker), fork(logoutWorker)])
 }
 
@@ -148,62 +153,39 @@ export function* userSaga() {
  */
 
 const initialState = {
-  loading: false,
-  error: false,
   userId: undefined,
   githubId: undefined,
   login: undefined,
   avatarUrl: undefined,
   htmlUrl: undefined,
   name: undefined,
-  createdAt: undefined,
-  updatedAt: undefined
+  updatedAt: undefined,
+  favorites: [],
+  posts: []
 }
 
 /**
  * Reducer
  */
-
 export default function render(
-  state: UserProps = initialState,
+  state: UserEntityProps = initialState,
   action: Action
-): UserProps {
-  // Login
-  if (isType(action, actions.login.started)) {
-    return { ...state, loading: true }
-  }
-  if (isType(action, actions.login.done)) {
-    return { ...state, loading: false }
-  }
-  if (isType(action, actions.login.failed)) {
-    return { ...state, error: true, loading: false }
-  }
+): UserEntityProps {
   // Register
-  if (isType(action, actions.register.started)) {
-    return { ...state, loading: !action.payload.loggedIn }
-  }
   if (isType(action, actions.register.done)) {
-    const { params, result } = action.payload
+    const { result } = action.payload
     return {
       ...state,
-      ...result,
-      loading: false,
-      error: false
+      ...result
     }
-  }
-  if (isType(action, actions.register.failed)) {
-    return { ...state, loading: false, error: true }
   }
   // Logout
   if (isType(action, actions.logout.done)) {
     return { ...state, ...initialState }
   }
+  // Update
+  if (isType(action, actions.update)) {
+    return { ...state, ...action.payload }
+  }
   return state
 }
-
-/**
- * misc
- */
-export const withLoggedIn = withProps(({ user }: { user: UserProps }) => {
-  return { loggedIn: user.userId != null }
-})

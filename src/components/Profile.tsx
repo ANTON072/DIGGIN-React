@@ -13,7 +13,8 @@ interface Props {
 type EnhancedProps = Props
 
 export const Profile: React.SFC<EnhancedProps> = ({ user }) => {
-  const { login, avatarUrl, htmlUrl, name, loading } = user
+  const { login, avatarUrl, htmlUrl, name } = user.entity
+  const { loading } = user.app
   return (
     <Root>
       <a href={htmlUrl} target="_blank">

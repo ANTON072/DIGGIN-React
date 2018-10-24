@@ -6,8 +6,12 @@ import { compose, withHandlers, branch, renderComponent } from "recompose"
 import { Button, Intent } from "@blueprintjs/core"
 import { FaGithub } from "react-icons/fa"
 
-import { actions as userActions, UserProps } from "redux/modules/user"
-import { withLoggedIn } from "redux/modules/user"
+import {
+  actions as userActions,
+  UserEntityProps
+} from "redux/modules/user/entity"
+import { UserProps, withLoggedIn } from "redux/modules/user"
+
 import SearchBarContainer from "containers/SearchBarContainer"
 
 interface HeaderContainerProps {
@@ -20,7 +24,7 @@ export const HeaderContainer: React.SFC<HeaderContainerProps> = ({
   handleSubmit,
   user
 }) => {
-  const { loading } = user
+  const { loading } = user.app
   return (
     <Root>
       <form onSubmit={handleSubmit}>
@@ -41,7 +45,7 @@ export const HeaderContainer: React.SFC<HeaderContainerProps> = ({
   )
 }
 
-const mapStateToProps = ({ user }: { user: UserProps }) => ({
+const mapStateToProps = ({ user }: { user: UserEntityProps }) => ({
   user
 })
 

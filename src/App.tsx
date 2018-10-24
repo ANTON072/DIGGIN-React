@@ -8,18 +8,17 @@ import { compose, lifecycle, withHandlers } from "recompose"
 import GlobalStyles from "components/GlobalStyles"
 import {
   actions as userActions,
-  withLoggedIn,
-  UserProps
-} from "redux/modules/user"
+  UserEntityProps
+} from "redux/modules/user/entity"
+import { withLoggedIn } from "redux/modules/user"
 import MainLayout from "components/MainLayout"
 import HomePageContainer from "containers/PageHomeContainer"
-import { DateTime } from "luxon"
 
 interface ReduxProps {
-  user: UserProps
+  user: UserEntityProps
   loggedIn: boolean
   registerAction: (
-    { githubId, userId, loggedIn }: { githubId: string; userId: string }
+    { githubId, userId }: { githubId: string; userId: string }
   ) => void
 }
 
@@ -40,7 +39,7 @@ const App: React.SFC<EnhancedProps> = () => {
   )
 }
 
-const mapStateToProps = ({ user }: { user: UserProps }) => ({
+const mapStateToProps = ({ user }: { user: UserEntityProps }) => ({
   user
 })
 

@@ -3,7 +3,7 @@ import styled from "styled-components"
 import { compose, pure } from "recompose"
 
 type Props = React.ImgHTMLAttributes<{}> & {
-  avatarUrl: string | undefined
+  avatarUrl: string | null
 }
 
 const Avatar: React.SFC<Props> = ({ avatarUrl, alt, ...props }) => {

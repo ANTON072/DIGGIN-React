@@ -2,24 +2,18 @@ import { createStore, applyMiddleware, combineReducers, Store } from "redux"
 import createSagaMiddleware from "redux-saga"
 import { fork, all } from "redux-saga/effects"
 import { composeWithDevTools } from "redux-devtools-extension"
-import { persistStore, persistReducer, Persistor } from "redux-persist"
-import storage from "redux-persist/lib/storage"
+import { persistStore, Persistor } from "redux-persist"
 
-import app, { appSaga } from "./modules/app"
 import user, { userSaga } from "./modules/user"
+import editor, { editorSaga } from "./modules/editor"
 
 const composeEnhancers = composeWithDevTools({})
-const reducer = combineReducers({ app, user })
+const reducer = combineReducers({ user, editor })
 const sagaMiddleware = createSagaMiddleware()
 const middlewares = [sagaMiddleware]
-const persistConfig = {
-  key: "root",
-  storage,
-  whitelist: ["user"]
-}
 
 function* rootSaga() {
-  yield all([fork(appSaga), fork(userSaga)])
+  yield all([fork(userSaga), fork(editorSaga)])
 }
 
 type Props = {
@@ -30,7 +24,7 @@ type Props = {
 
 export default (initialState: object = {}): Props => {
   const store = createStore(
-    persistReducer(persistConfig, reducer),
+    reducer,
     initialState,
     composeEnhancers(applyMiddleware(...middlewares))
   )

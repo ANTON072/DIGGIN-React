@@ -4,7 +4,8 @@ import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
 import { compose } from "recompose"
 
-import { actions as userActions, UserProps } from "redux/modules/user"
+import { actions as userActions } from "redux/modules/user/entity"
+import { UserProps } from "redux/modules/user"
 import SidebarLogo from "components/SidebarLogo"
 import SidebarContents, { SidebarProps } from "components/SidebarContents"
 

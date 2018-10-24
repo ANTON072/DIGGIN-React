@@ -2,22 +2,17 @@ import * as React from "react"
 import styled from "styled-components"
 import { ButtonGroup, Icon, Alert } from "@blueprintjs/core"
 import { Link } from "react-router-dom"
-import {
-  compose,
-  withStateHandlers,
-  branch,
-  renderComponent,
-  pure
-} from "recompose"
+import { compose, withStateHandlers, branch, renderComponent } from "recompose"
 
 import Profile from "components/Profile"
 import TagIndex from "components/TagIndex"
 import SidebarAdd from "components/SidebarAdd"
-import { withLoggedIn, UserProps } from "redux/modules/user"
+import { UserEntityProps } from "redux/modules/user/entity"
+import { withLoggedIn } from "redux/modules/user"
 
 export interface SidebarProps {
   handleLogout: () => void
-  user: UserProps
+  user: UserEntityProps
 }
 
 interface InnerProps {
@@ -34,6 +29,7 @@ const LoggedInSidebar: React.SFC<EnhancedProps> = ({
   handleLogout,
   user
 }) => {
+  console.log("user:", user)
   return (
     <React.Fragment>
       <Alert
@@ -70,7 +66,6 @@ const LoggedInSidebar: React.SFC<EnhancedProps> = ({
 }
 
 export default compose<EnhancedProps, SidebarProps>(
-  pure,
   withLoggedIn,
   branch<EnhancedProps>(
     ({ loggedIn }) => !loggedIn,

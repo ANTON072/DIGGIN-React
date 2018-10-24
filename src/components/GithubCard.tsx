@@ -1,33 +1,27 @@
 import * as React from "react"
 import styled from "styled-components"
-import {
-  EditableText,
-  Card,
-  Elevation,
-  Intent,
-  H3,
-  Button,
-  Spinner,
-  Icon
-} from "@blueprintjs/core"
+import { Card, Elevation, H3, Icon } from "@blueprintjs/core"
 
 import Avatar from "components/Avatar"
 
-const GithubCard: React.SFC<{}> = () => {
+export interface GithubCardProps {
+  fullName: string | null
+  htmlUrl: string | null
+  description: string | null
+  avatarUrl: string | null
+  login: string | null
+}
+
+const GithubCard: React.SFC<{ data: GithubCardProps }> = ({ data }) => {
   return (
     <Root interactive={true} elevation={Elevation.TWO}>
       <LinkIcon icon="link" />
       <Wrapper>
-        <Avatar
-          // className={loadingStyle(loading)}
-          avatarUrl="https://avatars3.githubusercontent.com/u/1940565?v=4"
-          width={90}
-          height={90}
-        />
+        <Avatar avatarUrl={data.avatarUrl} width={90} height={90} />
         <Main>
-          <H3>Card heading</H3>
+          <H3>{data.fullName}</H3>
           <div>
-            <p>このライブラリは最高にいいです。</p>
+            <p>{data.description}</p>
           </div>
         </Main>
       </Wrapper>
@@ -37,6 +31,7 @@ const GithubCard: React.SFC<{}> = () => {
 
 const Root = styled(Card)`
   position: relative;
+  width: 100%;
 `
 
 const Wrapper = styled.div`

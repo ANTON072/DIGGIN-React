@@ -8,10 +8,11 @@
 {
   [POST_ID]: {
     repo_id: :string,
-    repo_title: :string,
-    repo_url: :string,
+    repo_full_name: :string,
+    repo_html_url: :string,
     repo_avatar_url: :string,
     repo_owner_login: :string,
+    repo_description: :string,
     created_at: :Timestamp,
     updated_at: :Timestamp,
     text: :string,

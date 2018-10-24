@@ -2,16 +2,16 @@ import * as React from "react"
 import { compose, lifecycle } from "recompose"
 import styled from "styled-components"
 
-import EditPostContainer from "containers/EditPostContainer"
+import EditorContainer from "containers/EditorContainer"
 import PostedItem from "components/PostedItem"
 
 const Home: React.SFC<{}> = () => {
   return (
     <Root>
-      <EditPostContainer />
-      <Posts>
+      <EditorContainer />
+      {/* <Posts>
         <PostedItem />
-      </Posts>
+      </Posts> */}
     </Root>
   )
 }
