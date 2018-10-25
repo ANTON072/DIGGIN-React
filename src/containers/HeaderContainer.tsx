@@ -45,7 +45,7 @@ export const HeaderContainer: React.SFC<HeaderContainerProps> = ({
   )
 }
 
-const mapStateToProps = ({ user }: { user: UserEntityProps }) => ({
+const mapStateToProps = ({ user }: { user: UserProps }) => ({
   user
 })
 

@@ -3,9 +3,15 @@ import styled from "styled-components"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
 import { compose, withHandlers } from "recompose"
-import { EditableText, Card, Intent, H2, Button } from "@blueprintjs/core"
+import {
+  EditableText,
+  Card,
+  Intent,
+  H2,
+  Button,
+  TagInput
+} from "@blueprintjs/core"
 
-import loadingStyle from "helpers/loadingStyle"
 import { UserProps } from "redux/modules/user"
 import {
   actions as editActions,
@@ -23,8 +29,9 @@ interface EnhancedProps {
   validCard: boolean
   inputRepo: ({ value }: { value: string }) => void
   inputText: ({ value }: { value: string }) => void
+  updateTags: ({ values }: { values: string[] }) => void
   submit: () => void
-  handleSubmit: React.FormEventHandler<HTMLFormElement>
+  handleSubmit: () => void
 }
 
 export const EditPost: React.SFC<EnhancedProps> = ({
@@ -33,6 +40,7 @@ export const EditPost: React.SFC<EnhancedProps> = ({
   loggedIn,
   inputRepo,
   inputText,
+  updateTags,
   validCard,
   handleSubmit
 }) => {
@@ -44,14 +52,8 @@ export const EditPost: React.SFC<EnhancedProps> = ({
   return (
     <Root>
       <Wrapper>
-        <Avatar
-          className={loadingStyle(loading)}
-          avatarUrl={avatarUrl}
-          width={40}
-          height={40}
-          alt={login}
-        />
-        <Form onSubmit={handleSubmit}>
+        <Avatar avatarUrl={avatarUrl} width={40} height={40} alt={login} />
+        <Form>
           <p>Let's share the React library you dug at Github.</p>
           <H2>
             <EditBlock
@@ -59,6 +61,7 @@ export const EditPost: React.SFC<EnhancedProps> = ({
               placeholder="username/repo"
               value={editor.inputRepoName}
               onChange={value => inputRepo({ value })}
+              disabled={editor.loading}
             />
           </H2>
           {validCard && (
@@ -80,15 +83,24 @@ export const EditPost: React.SFC<EnhancedProps> = ({
             placeholder="Input your report."
             value={editor.text}
             onChange={value => inputText({ value })}
+            disabled={editor.loading}
+          />
+          <TagBlock
+            placeholder="Input Tags"
+            onChange={values => updateTags({ values })}
+            addOnBlur={true}
+            values={editor.tags}
+            disabled={editor.loading}
           />
           <ButtonBlock>
             <PostButton
               disabled={
                 !validCard || editor.text == null || editor.text.length === 0
               }
-              type="submit"
+              type="button"
               intent={Intent.PRIMARY}
               loading={editor.loading}
+              onClick={handleSubmit}
             >
               POST
             </PostButton>
@@ -115,6 +127,7 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
     {
       inputRepo: editActions.inputRepo,
       inputText: editActions.inputText,
+      updateTags: editActions.updateTags,
       submit: editActions.submit.started
     },
     dispatch
@@ -149,7 +162,7 @@ const RepoBlock = styled.div`
   width: 100%;
 `
 
-const Form = styled.form`
+const Form = styled.div`
   width: calc(100% - 55px);
 `
 
@@ -165,4 +178,8 @@ const PostButton = styled(Button)`
 const EditBlock = styled(EditableText)`
   margin-top: 15px;
   background-color: #fff;
+`
+
+const TagBlock = styled(TagInput)`
+  margin-top: 15px;
 `

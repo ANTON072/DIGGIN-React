@@ -13,8 +13,10 @@ import {
 import camelcaseKeys from "camelcase-keys"
 import { withProps } from "recompose"
 import * as R from "ramda"
+import { Intent } from "@blueprintjs/core"
 
 import firebaseApp from "firebase"
+import { AppToaster } from "factories/toaster"
 import { actions as userActions } from "redux/modules/user/entity"
 
 export interface EditorProps {
@@ -27,6 +29,7 @@ export interface EditorProps {
   repoOwnerLogin: string | null
   repoDescription: string | null
   text: string
+  tags: object
 }
 
 /**
@@ -38,6 +41,7 @@ export const actions = {
   inputRepo: actionCreator<{ value: string }>("edit/inputRepo"),
   inputText: actionCreator<{ value: string }>("edit/inputText"),
   fetchRepo: actionCreator<{ value: object }>("edit/fetchRepo"),
+  updateTags: actionCreator<{ values: string[] }>("edit/updateTags"),
   submit: actionCreator.async<{}, {}, {}>("edit/submit")
 }
 
@@ -109,9 +113,12 @@ function* postWorker() {
       repoAvatarUrl,
       repoOwnerLogin,
       repoDescription,
-      text
+      text,
+      tags
     } = editor
     const sendJson = {
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
       repoId,
       repoFullName,
       repoHtmlUrl,
@@ -125,15 +132,22 @@ function* postWorker() {
         htmlUrl,
         avatarUrl
       },
-      tags: {},
-      favorites: {},
-      comments: {}
+      tags,
+      favorites: [],
+      comments: []
     }
     // DB登録
     try {
       const db = firebaseApp.firestore
       const postRef = db.collection("Post").doc()
       const userRef = db.doc(`User/${user.entity.userId}`)
+      const tagRef = db.collection("Tag")
+      const batch = db.batch()
+      tags.forEach((name: string) => {
+        const newTagRef = tagRef.doc(name)
+        batch.set(newTagRef, { createdAt: Date.now() })
+      })
+      yield call([batch, batch.commit])
       const posts = R.append(postRef.id, user.entity.posts)
       yield call(() =>
         db.runTransaction(async transaction => {
@@ -143,6 +157,7 @@ function* postWorker() {
       )
       yield put(userActions.update({ posts }))
       yield put(actions.submit.done({ params: {}, result: {} }))
+      AppToaster.show({ message: "投稿しました", intent: Intent.PRIMARY })
     } catch (error) {
       console.error(error)
       yield put(actions.submit.failed({ params: {}, error: {} }))
@@ -167,7 +182,8 @@ const initialState = {
   repoAvatarUrl: null,
   repoOwnerLogin: null,
   repoDescription: null,
-  text: ""
+  text: "",
+  tags: []
 }
 
 /**
@@ -193,10 +209,13 @@ export default function reducer(
     return { ...state, loading: true }
   }
   if (isType(action, actions.submit.done)) {
-    return { ...state, loading: false }
+    return { ...state, ...initialState }
   }
   if (isType(action, actions.submit.failed)) {
     return { ...state, loading: false }
+  }
+  if (isType(action, actions.updateTags)) {
+    return { ...state, tags: action.payload.values }
   }
   return state
 }

@@ -10,6 +10,7 @@ import {
   actions as userActions,
   UserEntityProps
 } from "redux/modules/user/entity"
+import { actions as entitiesActions } from "redux/modules/entities"
 import { withLoggedIn } from "redux/modules/user"
 import MainLayout from "components/MainLayout"
 import HomePageContainer from "containers/PageHomeContainer"
@@ -46,7 +47,8 @@ const mapStateToProps = ({ user }: { user: UserEntityProps }) => ({
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
-      registerAction: userActions.register.started
+      registerAction: userActions.register.started,
+      fetch: entitiesActions.fetch.started
     },
     dispatch
   )
@@ -79,6 +81,7 @@ export default compose<EnhancedProps, InnerProps>(
           this.props.handleRegister(uid, user.uid)
         }
       })
+      this.props.fetch({ category: "Post" })
     }
   })
 )(App)

@@ -6,14 +6,15 @@ import { persistStore, Persistor } from "redux-persist"
 
 import user, { userSaga } from "./modules/user"
 import editor, { editorSaga } from "./modules/editor"
+import entities, { entitiesSaga } from "./modules/entities/"
 
 const composeEnhancers = composeWithDevTools({})
-const reducer = combineReducers({ user, editor })
+const reducer = combineReducers({ user, editor, entities })
 const sagaMiddleware = createSagaMiddleware()
 const middlewares = [sagaMiddleware]
 
 function* rootSaga() {
-  yield all([fork(userSaga), fork(editorSaga)])
+  yield all([fork(userSaga), fork(editorSaga), fork(entitiesSaga)])
 }
 
 type Props = {
