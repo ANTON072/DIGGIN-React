@@ -6,10 +6,11 @@ import { persistStore, Persistor } from "redux-persist"
 
 import user, { userSaga } from "./modules/user"
 import editor, { editorSaga } from "./modules/editor"
+import posts from "./modules/posts"
 import entities, { entitiesSaga } from "./modules/entities/"
 
 const composeEnhancers = composeWithDevTools({})
-const reducer = combineReducers({ user, editor, entities })
+const reducer = combineReducers({ user, editor, posts, entities })
 const sagaMiddleware = createSagaMiddleware()
 const middlewares = [sagaMiddleware]
 

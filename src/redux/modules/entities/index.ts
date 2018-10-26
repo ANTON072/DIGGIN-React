@@ -1,4 +1,4 @@
-import { Action } from "redux"
+import { combineReducers, Action } from "redux"
 import actionCreatorFactory, { isType } from "typescript-fsa"
 import {
   call,
@@ -9,8 +9,9 @@ import {
   all,
   select
 } from "redux-saga/effects"
+import { mergeWith, isArray } from "lodash"
 
-import firebaseApp from "firebase"
+import posts, { postsSaga } from "./posts"
 
 /**
  * Action Creator
@@ -18,45 +19,35 @@ import firebaseApp from "firebase"
 const actionCreator = actionCreatorFactory()
 
 export const actions = {
-  fetch: actionCreator.async<{ category: string }, {}, {}>("entities/fetch")
+  fetch: actionCreator<{ normalizeData: object; type: string }>(
+    "entities/fetch"
+  )
 }
 
 /**
  * Saga
  */
-function* fetchWorker() {
-  while (true) {
-    const {
-      payload: { category }
-    } = yield take(actions.fetch.started)
-    // DBからデータを参照する
-    try {
-      const db = firebaseApp.firestore
-      const postRef = db
-        .collection("Post")
-        .where("tags", "array-contains", "sample")
-      const response = yield call([postRef, postRef.get])
-      console.log(response.size)
-      response.forEach(post => {
-        console.log(post.data())
-      })
-    } catch (error) {
-      console.error(error)
-    }
-  }
-}
-
 export function* entitiesSaga() {
-  yield all([fork(fetchWorker)])
+  yield all([fork(postsSaga)])
 }
-
-/**
- * Initial State
- */
 
 /**
  * Reducer
  */
-export default function reducer(state = {}, action: Action) {
-  return state
+const initialState = {
+  posts: {}
+}
+
+export default function reducer(state = initialState, action: Action) {
+  if (isType(action, actions.fetch)) {
+    const { normalizeData } = action.payload
+    return mergeWith(state, normalizeData.entities, (a, b) => {
+      if (isArray(a) && isArray(b)) {
+        return b
+      }
+    })
+  }
+  return {
+    posts: posts(state.posts, action)
+  }
 }

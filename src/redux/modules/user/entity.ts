@@ -32,41 +32,35 @@ const actionCreator = actionCreatorFactory()
 export const actions = {
   login: actionCreator.async<{}, {}, {}>("user/login"),
   logout: actionCreator.async("user/logout"),
-  register: actionCreator.async<
-    { githubId?: string; userId?: string },
+  fetch: actionCreator.async<
+    { githubId: string; userId: string },
     UserEntityProps,
     {}
-  >("user/REGISTER"),
+  >("user/fetch"),
   update: actionCreator<UserEntityProps>("user/UPDATE")
 }
 
 /**
  * Saga
  */
-function* registerWorker() {
+function* fetchWorker() {
   while (true) {
     const {
       payload: { githubId, userId }
-    } = yield take(actions.register.started)
+    } = yield take(actions.fetch.started)
     try {
-      // 登録ユーザーか確認する
-      // 前回訪問時より1日以上立っていたらユーザー情報を更新する
-      const { user } = yield select()
-      if (
-        user.entity.updatedAt &&
-        Date.now() - user.entity.updatedAt < 86400000
-      ) {
-        return
-      }
-      // DB登録
+      // 登録ユーザーの場合はreducerを更新する
       const db = firebaseApp.firestore
       const userRef = db.doc(`User/${userId}`)
       const me = yield call([userRef, userRef.get])
+      let favorites = []
+      let posts = []
       if (me.exists) {
-        // DBからユーザー情報を取得してReducerに登録する
-        const { favorites, posts } = me.data()
-        yield put(actions.update({ favorites, posts }))
+        favorites = me.data().favorites
+        posts = me.data().posts
       } else {
+        // ユーザーインスタンスを新規作成
+        console.log("create a new user.")
         yield call([userRef, userRef.set], { favorites: [], posts: [] })
       }
       // Reducer登録
@@ -79,22 +73,22 @@ function* registerWorker() {
       const keys = ["login", "avatarUrl", "htmlUrl", "name"]
       const snakeJson = camelcaseKeys(json)
       const filteredJson = R.pick<UserEntityProps, string>(keys, snakeJson)
-      const updatedAt = Date.now()
       const registerData = {
         ...filteredJson,
         githubId,
         userId,
-        updatedAt
+        favorites,
+        posts
       }
       yield put(
-        actions.register.done({
+        actions.fetch.done({
           params: { githubId, userId },
           result: registerData
         })
       )
     } catch (error) {
       console.error(error.message)
-      yield put(actions.register.failed({ params: {}, error: {} }))
+      yield put(actions.fetch.failed({ params: {}, error: {} }))
     }
   }
 }
@@ -145,7 +139,7 @@ function* logoutWorker() {
 }
 
 export function* userEntitySaga() {
-  yield all([fork(registerWorker), fork(loginWorker), fork(logoutWorker)])
+  yield all([fork(fetchWorker), fork(loginWorker), fork(logoutWorker)])
 }
 
 /**
@@ -167,12 +161,12 @@ const initialState = {
 /**
  * Reducer
  */
-export default function render(
+export default function reducer(
   state: UserEntityProps = initialState,
   action: Action
 ): UserEntityProps {
   // Register
-  if (isType(action, actions.register.done)) {
+  if (isType(action, actions.fetch.done)) {
     const { result } = action.payload
     return {
       ...state,

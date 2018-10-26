@@ -29,7 +29,6 @@ const LoggedInSidebar: React.SFC<EnhancedProps> = ({
   handleLogout,
   user
 }) => {
-  console.log("user:", user)
   return (
     <React.Fragment>
       <Alert

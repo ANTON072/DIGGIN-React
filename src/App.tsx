@@ -3,31 +3,28 @@ import { Switch, withRouter, RouteComponentProps } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
 import firebase from "firebase/app"
-import { compose, lifecycle, withHandlers } from "recompose"
+import { compose, lifecycle } from "recompose"
 
 import GlobalStyles from "components/GlobalStyles"
 import {
   actions as userActions,
   UserEntityProps
 } from "redux/modules/user/entity"
-import { actions as entitiesActions } from "redux/modules/entities"
 import { withLoggedIn } from "redux/modules/user"
 import MainLayout from "components/MainLayout"
 import HomePageContainer from "containers/PageHomeContainer"
+import firebaseApp from "firebase"
 
 interface ReduxProps {
   user: UserEntityProps
   loggedIn: boolean
-  registerAction: (
+  fetchUser: (
     { githubId, userId }: { githubId: string; userId: string }
   ) => void
+  updateUser: (json: UserEntityProps) => void
 }
 
-interface InnerProps {
-  handleRegister: (githubId: string, userId: string) => void
-}
-
-type EnhancedProps = RouteComponentProps<{}> & ReduxProps & InnerProps
+type EnhancedProps = RouteComponentProps<{}> & ReduxProps
 
 const App: React.SFC<EnhancedProps> = () => {
   return (
@@ -47,41 +44,45 @@ const mapStateToProps = ({ user }: { user: UserEntityProps }) => ({
 const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
-      registerAction: userActions.register.started,
-      fetch: entitiesActions.fetch.started
+      fetchUser: userActions.fetch.started,
+      updateUser: userActions.update
     },
     dispatch
   )
 
-export default compose<EnhancedProps, InnerProps>(
+export default compose<EnhancedProps, {}>(
   withRouter,
   connect(
     mapStateToProps,
     mapDispatchToProps
   ),
   withLoggedIn,
-  withHandlers<EnhancedProps, InnerProps>({
-    handleRegister: ({ user, registerAction }) => (
-      githubId: string,
-      userId: string
-    ) => {
-      registerAction({
-        userId,
-        githubId
-      })
-    }
-  }),
   lifecycle<EnhancedProps, {}>({
     componentDidMount() {
       // ログイン状態をリッスン
       firebase.auth().onAuthStateChanged((user: any) => {
         if (user) {
-          console.log("firebase loggedin")
+          console.log("firebase loggedIn")
           const { uid } = user.providerData[0]
-          this.props.handleRegister(uid, user.uid)
+          const githubId = uid
+          const userId = user.uid
+          this.props.fetchUser({ githubId, userId })
         }
       })
-      this.props.fetch({ category: "Post" })
+      const db = firebaseApp.firestore
+      // ユーザー情報の更新をリッスン
+      db.collection("User").onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+          if (change.type === "modified") {
+            console.log("modified")
+            this.props.updateUser(change.doc.data())
+          }
+          if (change.type === "removed") {
+            console.log("removed")
+            // console.log("Removed city: ", change.doc.data())
+          }
+        })
+      })
     }
   })
 )(App)

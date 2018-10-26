@@ -35,7 +35,7 @@ export default function render(
   if (isType(action, actions.login.failed)) {
     return { ...state, error: true, loading: false }
   }
-  if (isType(action, actions.register.failed)) {
+  if (isType(action, actions.fetch.failed)) {
     return { ...state, error: true }
   }
   return state

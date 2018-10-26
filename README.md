@@ -7,20 +7,20 @@
 ```
 {
   [POST_ID]: {
-    repo_id: :string,
-    repo_full_name: :string,
-    repo_html_url: :string,
-    repo_avatar_url: :string,
-    repo_owner_login: :string,
-    repo_description: :string,
-    created_at: :Timestamp,
-    updated_at: :Timestamp,
+    repoId: :string,
+    repoFullName: :string,
+    repoHtmlUrl: :string,
+    repoAvatarUrl: :string,
+    repoOwnerLogin: :string,
+    repoDescription: :string,
+    createdAt: :Timestamp,
+    updatedAt: :Timestamp,
     text: :string,
     user: {
-      user_id: :string,
+      userId: :string,
       login: :string,
-      html_url: :string,
-      avatar_url: :string
+      htmlUrl: :string,
+      avatarUrl: :string
     },
     tags: {
       [TAG_ID]: true,
@@ -32,11 +32,12 @@
     },
     comments: {
       [COMMENT_ID]: {
-        user_id: :string,
+        userId: :string,
         login: :string,
-        html_url: :string,
-        avatar_url: :string,
-        created_at: :Timestamp,
+        htmlUrl: :string,
+        avatarUrl: :string,
+        createdAt: :Timestamp,
+        text: :string
       },
       ...
     }

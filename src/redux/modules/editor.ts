@@ -140,22 +140,7 @@ function* postWorker() {
     try {
       const db = firebaseApp.firestore
       const postRef = db.collection("Post").doc()
-      const userRef = db.doc(`User/${user.entity.userId}`)
-      const tagRef = db.collection("Tag")
-      const batch = db.batch()
-      tags.forEach((name: string) => {
-        const newTagRef = tagRef.doc(name)
-        batch.set(newTagRef, { createdAt: Date.now() })
-      })
-      yield call([batch, batch.commit])
-      const posts = R.append(postRef.id, user.entity.posts)
-      yield call(() =>
-        db.runTransaction(async transaction => {
-          transaction.set(postRef, sendJson)
-          transaction.update(userRef, { posts })
-        })
-      )
-      yield put(userActions.update({ posts }))
+      yield call([postRef, postRef.set], sendJson)
       yield put(actions.submit.done({ params: {}, result: {} }))
       AppToaster.show({ message: "投稿しました", intent: Intent.PRIMARY })
     } catch (error) {
