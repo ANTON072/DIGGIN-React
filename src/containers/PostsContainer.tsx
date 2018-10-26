@@ -2,7 +2,7 @@ import * as React from "react"
 import styled from "styled-components"
 import { connect } from "react-redux"
 import { bindActionCreators, Dispatch } from "redux"
-import { compose, withHandlers, lifecycle } from "recompose"
+import { compose, withHandlers, lifecycle, pure } from "recompose"
 import {
   EditableText,
   Card,
@@ -13,14 +13,28 @@ import {
 } from "@blueprintjs/core"
 
 import { UserProps } from "redux/modules/user"
-import { actions as postsActions } from "redux/modules/posts"
+import { PostProps } from "redux/modules/posts"
+import { actions as postsActions, withEntities } from "redux/modules/posts/list"
 
-export const PostsContainer: React.SFC<{}> = () => {
-  return <div>post</div>
+import PostedItem from "components/PostedItem"
+
+export const PostsContainer: React.SFC<{}> = ({ postData }) => {
+  return postData.map(post => {
+    return <PostedItem key={post.id} {...post} />
+  })
 }
 
-const mapStateToProps = ({ user }: { user: UserProps }) => ({
-  user
+const mapStateToProps = ({
+  user,
+  posts,
+  entities
+}: {
+  user: UserProps
+  posts: PostProps
+}) => ({
+  user,
+  posts,
+  entities
 })
 
 const mapDispatchToProps = (dispatch: Dispatch) =>
@@ -36,10 +50,10 @@ export default compose(
     mapStateToProps,
     mapDispatchToProps
   ),
+  withEntities,
   lifecycle({
     componentDidMount() {
-      console.log("did mount")
-      this.props.get()
+      // this.props.get()
     }
   })
 )(PostsContainer)

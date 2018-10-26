@@ -12,18 +12,25 @@ import {
 import Avatar from "components/Avatar"
 import GithubCard from "components/GithubCard"
 
-const PostedItem: React.SFC<{}> = () => {
+const PostedItem: React.SFC<{}> = props => {
   return (
     <Root>
       <Wrapper>
         <Avatar
-          // className={loadingStyle(loading)}
           avatarUrl="https://avatars3.githubusercontent.com/u/1940565?v=4"
           width={40}
           height={40}
         />
         <Main>
-          <GithubCard />
+          <div>{props.text}</div>
+          <GithubCard
+            data={{
+              fullName: props.repoFullName,
+              htmlUrl: props.repoHtmlUrl,
+              description: props.repoDescription,
+              avatarUrl: props.repoAvatarUrl
+            }}
+          />
         </Main>
       </Wrapper>
     </Root>

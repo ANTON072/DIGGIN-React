@@ -1,7 +1,7 @@
 import { combineReducers } from "redux"
 import { persistReducer } from "redux-persist"
-import { fork, all } from "redux-saga/effects"
 import storage from "redux-persist/lib/storage"
+import { fork, all } from "redux-saga/effects"
 
 import app, { UserAppProps } from "./app"
 import entity, { userEntitySaga, UserEntityProps } from "./entity"
@@ -16,13 +16,6 @@ export interface UserProps {
   entity: UserEntityProps
 }
 
-/**
- * misc
- */
-export const withLoggedIn = withProps(({ user }: { user: UserProps }) => {
-  return { loggedIn: user.entity.userId != null }
-})
-
 const userPersistConfig = {
   key: "user",
   storage,
@@ -33,3 +26,10 @@ export default persistReducer(
   userPersistConfig,
   combineReducers({ app, entity })
 )
+
+/**
+ * misc
+ */
+export const withLoggedIn = withProps(({ user }: { user: UserProps }) => {
+  return { loggedIn: user.entity.userId != null }
+})

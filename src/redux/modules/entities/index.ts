@@ -1,17 +1,5 @@
-import { combineReducers, Action } from "redux"
-import actionCreatorFactory, { isType } from "typescript-fsa"
-import {
-  call,
-  fork,
-  put,
-  take,
-  takeLatest,
-  all,
-  select
-} from "redux-saga/effects"
-import { mergeWith, isArray } from "lodash"
-
-import posts, { postsSaga } from "./posts"
+import storage from "redux-persist/lib/storage"
+import actionCreatorFactory from "typescript-fsa"
 
 /**
  * Action Creator
@@ -25,29 +13,19 @@ export const actions = {
 }
 
 /**
- * Saga
- */
-export function* entitiesSaga() {
-  yield all([fork(postsSaga)])
-}
-
-/**
  * Reducer
  */
 const initialState = {
-  posts: {}
+  posts: {},
+  users: {}
 }
 
 export default function reducer(state = initialState, action: Action) {
-  if (isType(action, actions.fetch)) {
-    const { normalizeData } = action.payload
-    return mergeWith(state, normalizeData.entities, (a, b) => {
-      if (isArray(a) && isArray(b)) {
-        return b
-      }
-    })
+  if (action.payload && action.payload.normalizeData) {
+    return {
+      ...state,
+      ...action.payload.normalizeData.entities
+    }
   }
-  return {
-    posts: posts(state.posts, action)
-  }
+  return state
 }

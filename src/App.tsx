@@ -14,6 +14,7 @@ import { withLoggedIn } from "redux/modules/user"
 import MainLayout from "components/MainLayout"
 import HomePageContainer from "containers/PageHomeContainer"
 import firebaseApp from "firebase"
+import { actions as postsListActions } from "redux/modules/posts/list"
 
 interface ReduxProps {
   user: UserEntityProps
@@ -45,7 +46,8 @@ const mapDispatchToProps = (dispatch: Dispatch) =>
   bindActionCreators(
     {
       fetchUser: userActions.fetch.started,
-      updateUser: userActions.update
+      updateUser: userActions.update,
+      updatePosts: postsListActions.get.started
     },
     dispatch
   )
@@ -74,14 +76,16 @@ export default compose<EnhancedProps, {}>(
       db.collection("User").onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === "modified") {
-            console.log("modified")
             this.props.updateUser(change.doc.data())
           }
           if (change.type === "removed") {
             console.log("removed")
-            // console.log("Removed city: ", change.doc.data())
           }
         })
+      })
+      // 投稿の更新をリッスン
+      db.collection("Post").onSnapshot(() => {
+        this.props.updatePosts()
       })
     }
   })

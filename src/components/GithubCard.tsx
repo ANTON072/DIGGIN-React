@@ -1,6 +1,6 @@
 import * as React from "react"
 import styled from "styled-components"
-import { Card, Elevation, H3, Icon } from "@blueprintjs/core"
+import { Card, Elevation, H3 } from "@blueprintjs/core"
 
 import Avatar from "components/Avatar"
 
@@ -9,13 +9,11 @@ export interface GithubCardProps {
   htmlUrl: string | null
   description: string | null
   avatarUrl: string | null
-  login: string | null
 }
 
 const GithubCard: React.SFC<{ data: GithubCardProps }> = ({ data }) => {
   return (
     <Root interactive={true} elevation={Elevation.TWO}>
-      <LinkIcon icon="link" />
       <Wrapper>
         <Avatar avatarUrl={data.avatarUrl} width={90} height={90} />
         <Main>
@@ -41,13 +39,6 @@ const Wrapper = styled.div`
 
 const Main = styled.div`
   width: calc(100% - 105px);
-`
-
-const LinkIcon = styled(Icon)`
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  color: #2b95d6;
 `
 
 export default GithubCard

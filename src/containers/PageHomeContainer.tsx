@@ -30,11 +30,6 @@ export default compose(
     null,
     mapDispatchToProps
   )
-  // lifecycle({
-  //   componentDidMount() {
-  //     this.props.fetch({ category: "Post" })
-  //   }
-  // })
 )(Home)
 
 const Root = styled.div``
